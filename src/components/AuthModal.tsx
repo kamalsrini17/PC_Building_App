@@ -62,16 +62,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     setError('');
 
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: 'https://idyllic-cranachan-291864.netlify.app',
-        queryParams: {
-          prompt: 'select_account',
-          access_type: 'offline',
-          include_granted_scopes: 'true'
-        }
-      }
-    });
+  provider: 'google',
+  options: {
+    redirectTo: 'https://idyllic-cranachan-291864.netlify.app',
+    queryParams: {
+      prompt: 'select_account'
+    }
+  }
+});
 
     if (error) throw error;
   } catch (error: any) {
