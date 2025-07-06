@@ -62,18 +62,21 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     setError('');
 
     await supabase.auth.signInWithOAuth({
-  provider: 'google',
-  options: {
-    redirectTo: 'https://idyllic-cranachan-291864.netlify.app/',
-    queryParams: {
-      prompt: 'select_account',
-      access_type: 'offline', // Optional, but good practice
-    },
-  },
-});
-
-
-
+      provider: 'google',
+      options: {
+        redirectTo: 'https://idyllic-cranachan-291864.netlify.app/',
+        queryParams: {
+          prompt: 'select_account',
+          access_type: 'offline',
+        },
+      },
+    });
+  } catch (error: any) {
+    setError(error.message);
+  } finally {
+    setSocialLoading(false);
+  }
+};
 
   const resetForm = () => {
     setEmail('');
