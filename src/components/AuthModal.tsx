@@ -64,14 +64,15 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: `${window.location.origin}/`
         }
       });
       
       if (error) throw error;
+      
+      // Don't close modal immediately - let the redirect happen
     } catch (error: any) {
       setError(error.message);
-    } finally {
       setSocialLoading(false);
     }
   };
