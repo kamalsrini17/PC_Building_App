@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, AlertCircle, Loader2, Chrome } from 'lucide-react';
+import { X, Mail, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface AuthModalProps {
@@ -15,7 +15,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [socialLoading, setSocialLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -53,26 +52,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       setError(error.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleMicrosoftSignIn = async () => {
-    try {
-      setSocialLoading(true);
-      setError('');
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'azure',
-        options: {
-          redirectTo: window.location.origin
-        }
-      });
-      
-      if (error) throw error;
-    } catch (error: any) {
-      setError(error.message);
-    } finally {
-      setSocialLoading(false);
     }
   };
 
@@ -122,37 +101,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}
-
-          {/* Microsoft Sign In Button */}
-          <button
-            onClick={handleMicrosoftSignIn}
-            disabled={socialLoading || loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 mb-6"
-          >
-            {socialLoading ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Connecting...</span>
-              </>
-            ) : (
-              <>
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z"/>
-                </svg>
-                <span>Continue with Microsoft</span>
-              </>
-            )}
-          </button>
-
-          {/* Divider */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-600"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-900 text-gray-400">Or continue with email</span>
-            </div>
-          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -215,7 +163,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || socialLoading}
+              disabled={loading}
               className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 mt-6"
             >
               {loading ? (
