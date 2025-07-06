@@ -56,30 +56,31 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      setSocialLoading(true);
-      setError('');
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: 'https://idyllic-cranachan-291864.netlify.app/#',
-          queryParams: {
-            prompt: 'select_account',
-            hd: ''
-          }
+ const handleGoogleSignIn = async () => {
+  try {
+    setSocialLoading(true);
+    setError('');
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://idyllic-cranachan-291864.netlify.app',
+        queryParams: {
+          prompt: 'select_account',
+          access_type: 'offline',
+          include_granted_scopes: 'true'
         }
-      });
-      
-      if (error) throw error;
-      
-      // Don't close modal immediately - let the redirect happen
-    } catch (error: any) {
-      setError(error.message);
-      setSocialLoading(false);
-    }
-  };
+      }
+    });
+
+    if (error) throw error;
+  } catch (error: any) {
+    setError(error.message);
+    setSocialLoading(false);
+  }
+};
+
+
 
   const resetForm = () => {
     setEmail('');
