@@ -188,3 +188,49 @@ export default function BuildPage() {
               </h3>
               <p className="text-green-400 font-bold mb-1">
                 {item.buybox_price?.raw || item.price?.raw || 'N/A'}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6 space-x-2">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="px-4 py-2 text-gray-300">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* Save Build Modal */}
+      {showSaveModal && (
+        <SaveBuildModal
+          onSave={handleSaveBuild}
+          onClose={() => setShowSaveModal(false)}
+        />
+      )}
+
+      {/* Success Message */}
+      {saveSuccess && (
+        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded">
+          Build saved successfully!
+        </div>
+      )}
+    </div>
+  );
+}
