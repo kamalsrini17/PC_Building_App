@@ -57,17 +57,19 @@ export default function BuildPage() {
   const [showSaveModal, setShowSaveModal] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
-  // Fetch category listing
+  // 1) Populate grid via type=search + browse_node
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
       setError('');
       try {
+        const term = encodeURIComponent(activeTab);
         const nodeId = browseNodes[activeTab];
         const params = new URLSearchParams({
           api_key: RF_API_KEY,
-          type: 'browse',
+          type: 'search',
           amazon_domain: 'amazon.com',
+          search_term: term,
           page: currentPage.toString()
         });
         if (nodeId) params.set('browse_node', nodeId);
@@ -75,7 +77,7 @@ export default function BuildPage() {
         const url = `${RF_API_URL}?${params.toString()}`;
         const res = await fetch(url);
         const json = await res.json();
-        console.log('Browse response:', json);
+        console.log('Search response:', json);
 
         setItems(json.search_results || []);
         const total = json.pagination?.total_pages || 1;
@@ -83,6 +85,7 @@ export default function BuildPage() {
       } catch (err) {
         console.error(err);
         setError('Failed to load products.');
+        setItems([]);
       } finally {
         setLoading(false);
       }
@@ -90,8 +93,9 @@ export default function BuildPage() {
     loadProducts();
   }, [activeTab, currentPage]);
 
-  // Handle selection and fetch full details
+  // 2) On select, fetch full product specs via type=product
   const handleSelect = async (item: any) => {
+    // store shallow
     setBuild(prev => ({ ...prev, [activeTab]: item }));
     try {
       const url = `${RF_API_URL}`
@@ -115,7 +119,7 @@ export default function BuildPage() {
     }
   };
 
-  // Save build
+  // 3) Save build to Supabase
   const handleSaveBuild = async (name: string) => {
     if (!user) return;
     const totalPrice = Object.values(build).reduce((sum, part: any) => {
@@ -124,12 +128,9 @@ export default function BuildPage() {
       return sum + num;
     }, 0);
 
-    const { error: saveErr } = await supabase.from('builds').insert([{
-      name,
-      user_id: user.id,
-      components: build,
-      total_price: totalPrice
-    }]);
+    const { error: saveErr } = await supabase
+      .from('builds')
+      .insert([{ name, user_id: user.id, components: build, total_price: totalPrice }]);
 
     if (!saveErr) setSaveSuccess(true);
     else console.error(saveErr);
@@ -141,12 +142,18 @@ export default function BuildPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <button onClick={() => (window.location.href = '/')} className="flex items-center text-gray-400 hover:text-red-400">
+          <button
+            onClick={() => (window.location.href = '/')}
+            className="flex items-center text-gray-400 hover:text-red-400"
+          >
             <ArrowLeft className="h-5 w-5 mr-2" /> Back
           </button>
           <h1 className="ml-6 text-2xl font-bold">Build Your PC</h1>
         </div>
-        <button onClick={() => setShowSaveModal(true)} className="flex items-center bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+        <button
+          onClick={() => setShowSaveModal(true)}
+          className="flex items-center bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
+        >
           <Save className="h-5 w-5 mr-2" /> Save Build
         </button>
       </div>
@@ -157,7 +164,11 @@ export default function BuildPage() {
           <button
             key={cat.key}
             onClick={() => { setActiveTab(cat.key); setCurrentPage(1); }}
-            className={`flex items-center px-4 py-2 rounded ${activeTab === cat.key ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-300'}`}
+            className={`flex items-center px-4 py-2 rounded ${
+              activeTab === cat.key
+                ? 'bg-red-600 text-white'
+                : 'bg-gray-800 text-gray-300'
+            }`}
           >
             <cat.icon className="h-4 w-4 mr-1" />
             {cat.name}
@@ -165,7 +176,7 @@ export default function BuildPage() {
         ))}
       </div>
 
-      {/* Content */}
+      {/* Error & Loading */}
       {error && <p className="text-red-500 mb-4">{error}</p>}
       {loading ? (
         <p>Loading...</p>
@@ -175,13 +186,23 @@ export default function BuildPage() {
             <div
               key={item.asin}
               onClick={() => handleSelect(item)}
-              className={`bg-gray-800 rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${build[activeTab]?.asin === item.asin ? 'ring-2 ring-red-500' : ''}`}
+              className={`bg-gray-800 rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${
+                build[activeTab]?.asin === item.asin ? 'ring-2 ring-red-500' : ''
+              }`}
             >
               <div className="aspect-square overflow-hidden mb-2">
-                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <h3 className="text-white font-semibold mb-1 line-clamp-2">{item.title}</h3>
-              <p className="text-green-400 font-bold mb-1">{item.buybox_price?.raw || item.price?.raw || 'N/A'}</p>
+              <h3 className="text-white font-semibold mb-1 line-clamp-2">
+                {item.title}
+              </h3>
+              <p className="text-green-400 font-bold mb-1">
+                {item.buybox_price?.raw || item.price?.raw || 'N/A'}
+              </p>
             </div>
           ))}
         </div>
@@ -197,7 +218,9 @@ export default function BuildPage() {
           >
             Previous
           </button>
-          <span className="px-4 py-2 text-gray-300">Page {currentPage} of {totalPages}</span>
+          <span className="px-4 py-2 text-gray-300">
+            Page {currentPage} of {totalPages}
+          </span>
           <button
             onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
             disabled={currentPage === totalPages}
@@ -208,7 +231,7 @@ export default function BuildPage() {
         </div>
       )}
 
-      {/* Save Modal & Success */}
+      {/* Save Build Modal */}
       <SaveBuildModal
         isOpen={showSaveModal}
         onClose={() => setShowSaveModal(false)}
@@ -216,6 +239,7 @@ export default function BuildPage() {
         success={saveSuccess}
       />
 
+      {/* Success Message */}
       {saveSuccess && (
         <div className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded">
           Build saved successfully!
