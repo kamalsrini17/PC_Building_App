@@ -14,13 +14,13 @@ const componentCategories = [
   { key: 'cpu',          name: 'CPU',           icon: Cpu },
   { key: 'gpu',          name: 'GPU',           icon: Monitor },
   { key: 'motherboard',  name: 'Motherboard',   icon: HardDrive },
-  { key: 'memory',       name: 'Memory',        icon: Usb },
-  { key: 'storage',      name: 'Storage',       icon: HardDrive },
+  { key: 'RAM',       name: 'Memory',        icon: Usb },
+  { key: 'PC Storage',      name: 'Storage',       icon: HardDrive },
   { key: 'psu',          name: 'Power Supply',  icon: Zap },
   { key: 'cpuCooler',    name: 'CPU Cooler',    icon: Fan },
   { key: 'caseFans',     name: 'Case Fans',     icon: Fan },
-  { key: 'case',         name: 'PC Case',       icon: Monitor },
-  { key: 'accessories',  name: 'PC Accessories',icon: Usb },
+  { key: 'PCcase',         name: 'PC Case',       icon: Monitor },
+  { key: 'PCaccessories',  name: 'PC Accessories',icon: Usb },
 ];
 
 
