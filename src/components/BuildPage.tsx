@@ -24,6 +24,19 @@ const categoryKeywords: Record<string,string[]> = {
   PCaccessories:  ['accessor','screw','standoff','cable','anti-sag','rgb']
 };
 
+const componentCategories = [
+  { key: 'cpu', name: 'CPU', icon: Cpu },
+  { key: 'gpu', name: 'GPU', icon: Monitor },
+  { key: 'motherboard', name: 'Motherboard', icon: Cpu },
+  { key: 'RAM', name: 'RAM', icon: HardDrive },
+  { key: 'PC Storage', name: 'Storage', icon: HardDrive },
+  { key: 'psu', name: 'PSU', icon: Zap },
+  { key: 'cpuCooler', name: 'CPU Cooler', icon: Fan },
+  { key: 'caseFans', name: 'Case Fans', icon: Fan },
+  { key: 'PCcase', name: 'PC Case', icon: Monitor },
+  { key: 'PCaccessories', name: 'Accessories', icon: Usb }
+];
+
 
 
 export default function BuildPage() {
