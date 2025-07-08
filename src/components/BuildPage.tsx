@@ -5,6 +5,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import SaveBuildModal from './SaveBuildModal';
+import { fetchAmazonProducts } from '../lib/rapidapi';
 
 const componentCategories = [
   { key: 'cpu', name: 'CPU', icon: Cpu },
@@ -25,23 +26,17 @@ export default function BuildPage() {
   const { user } = useAuth();
 
   useEffect(() => {
-    const fetchAmazonData = async () => {
-      const query = encodeURIComponent(activeTab);
-      const res = await fetch(
-        `https://real-time-amazon-data.p.rapidapi.com/search?query=${query}&country=US`,
-        {
-          method: "GET",
-          headers: {
-            "X-RapidAPI-Key": "7c520bb817msh94cdd7ed7932100p1c2805jsnb058fc416829",
-            "X-RapidAPI-Host": "real-time-amazon-data.p.rapidapi.com",
-          },
-        }
-      );
-      const data = await res.json();
-      setItems(data.products || []);
+    const loadProducts = async () => {
+      try {
+        const products = await fetchAmazonProducts(activeTab);
+        setItems(products);
+      } catch (error) {
+        console.error('Failed to load products:', error);
+        setItems([]);
+      }
     };
 
-    fetchAmazonData();
+    loadProducts();
   }, [activeTab]);
 
   const handleSelect = (component: any) => {
