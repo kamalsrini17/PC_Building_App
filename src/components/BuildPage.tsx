@@ -23,7 +23,7 @@ const browseNodes: Record<string,string> = {
   gpu: '284822',             // Graphics Cards
   motherboard: '194322',     // Motherboards
   ram: '17923671011',        // Memory (RAM)
-  pcstorage: '17923946011',  // Internal Storage (SSD & HDD)
+  pcstorage: '17923671011',  // Internal Storage (SSD & HDD)
   psu: '2231242011',         // Power Supplies
   cpucooler: '17923683011',  // CPU Coolers & Heatsinks
   casefans: '17923689011',   // Case Fans
@@ -33,16 +33,16 @@ const browseNodes: Record<string,string> = {
 
 // ─── tabs with labels and icons ───
 const componentCategories = [
-  { key: 'cpu',            name: 'CPU',            icon: Cpu },
-  { key: 'gpu',            name: 'GPU',            icon: Monitor },
-  { key: 'motherboard',    name: 'Motherboard',    icon: HardDrive },
-  { key: 'ram',            name: 'Memory',         icon: Usb },
-  { key: 'pcstorage',      name: 'Storage',        icon: HardDrive },
-  { key: 'psu',            name: 'Power Supply',   icon: Zap },
-  { key: 'cpucooler',      name: 'CPU Cooler',     icon: Fan },
-  { key: 'casefans',       name: 'Case Fans',      icon: Fan },
-  { key: 'pccase',         name: 'PC Case',        icon: Monitor },
-  { key: 'pcaccessories',  name: 'PC Accessories', icon: Usb },
+  { key: 'cpu',           name: 'CPU',            icon: Cpu },
+  { key: 'gpu',           name: 'GPU',            icon: Monitor },
+  { key: 'motherboard',   name: 'Motherboard',    icon: HardDrive },
+  { key: 'ram',           name: 'Memory',         icon: Usb },
+  { key: 'pcstorage',     name: 'Storage',        icon: HardDrive },
+  { key: 'psu',           name: 'Power Supply',   icon: Zap },
+  { key: 'cpucooler',     name: 'CPU Cooler',     icon: Fan },
+  { key: 'casefans',      name: 'Case Fans',      icon: Fan },
+  { key: 'pccase',        name: 'PC Case',        icon: Monitor },
+  { key: 'pcaccessories', name: 'PC Accessories', icon: Usb },
 ];
 
 export default function BuildPage() {
@@ -57,29 +57,25 @@ export default function BuildPage() {
   const [showSaveModal, setShowSaveModal] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
-  // Fetch via Rainforest with category-specific browse_node
+  // 1) List products via Rainforest with browse
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
       setError('');
       try {
-        const term      = encodeURIComponent(activeTab);
-        const nodeId    = browseNodes[activeTab];
-        const urlParams = new URLSearchParams({
+        const nodeId = browseNodes[activeTab];
+        const params = new URLSearchParams({
           api_key: RF_API_KEY,
-          type: 'search',
+          type: 'browse',
           amazon_domain: 'amazon.com',
-          search_term: term,
           page: currentPage.toString(),
         });
-        if (nodeId) {
-          urlParams.set('browse_node', nodeId);
-        }
-        const url = `${RF_API_URL}?${urlParams.toString()}`;
+        if (nodeId) params.set('browse_node', nodeId);
 
-        const res  = await fetch(url);
+        const url = `${RF_API_URL}?${params.toString()}`;
+        const res = await fetch(url);
         const json = await res.json();
-        console.log('Rainforest response:', json);
+        console.log('Browse response:', json);
 
         const results = json.search_results || [];
         setItems(results);
@@ -87,21 +83,43 @@ export default function BuildPage() {
         const total = json.pagination?.total_pages || 1;
         setTotalPages(Math.min(total, 10));
       } catch (err) {
-        console.error('Load error:', err);
+        console.error(err);
         setError('Failed to load products.');
         setItems([]);
       } finally {
         setLoading(false);
       }
     };
-
     loadProducts();
   }, [activeTab, currentPage]);
 
-  const handleSelect = (item: any) => {
-    setBuild(prev => ({ ...prev, [activeTab]: item }));
+  // 2) On select, fetch full product data
+  const handleSelect = async (shallowItem: any) => {
+    setBuild(prev => ({ ...prev, [activeTab]: shallowItem }));
+    try {
+      const url = `${RF_API_URL}`
+        + `?api_key=${RF_API_KEY}`
+        + `&type=product`
+        + `&amazon_domain=amazon.com`
+        + `&asin=${shallowItem.asin}`;
+
+      const res = await fetch(url);
+      const detailJson = await res.json();
+      console.log('Product detail:', detailJson);
+
+      setBuild(prev => ({
+        ...prev,
+        [activeTab]: {
+          ...shallowItem,
+          details: detailJson.product || detailJson
+        }
+      }));
+    } catch (err) {
+      console.error('Detail fetch error:', err);
+    }
   };
 
+  // 3) Save build
   const handleSaveBuild = async (name: string) => {
     if (!user) return;
     const totalPrice = Object.values(build).reduce((sum, part: any) => {
@@ -115,12 +133,13 @@ export default function BuildPage() {
       .insert([{ name, user_id: user.id, components: build, total_price: totalPrice }]);
 
     if (!saveErr) setSaveSuccess(true);
-    else console.error('Save error:', saveErr);
+    else console.error(saveErr);
     setShowSaveModal(false);
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <button
@@ -139,19 +158,14 @@ export default function BuildPage() {
         </button>
       </div>
 
-      {/* Tab bar */}
+      {/* Tabs */}
       <div className="flex space-x-4 mb-6 overflow-x-auto pb-2">
         {componentCategories.map(cat => (
           <button
             key={cat.key}
-            onClick={() => {
-              setActiveTab(cat.key);
-              setCurrentPage(1);
-            }}
+            onClick={() => { setActiveTab(cat.key); setCurrentPage(1); }}
             className={`flex items-center px-4 py-2 rounded ${
-              activeTab === cat.key
-                ? 'bg-red-600 text-white'
-                : 'bg-gray-800 text-gray-300'
+              activeTab === cat.key ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-300'
             }`}
           >
             <cat.icon className="h-4 w-4 mr-1" />
@@ -171,24 +185,14 @@ export default function BuildPage() {
               key={item.asin}
               onClick={() => handleSelect(item)}
               className={`bg-gray-800 rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${
-                build[activeTab]?.asin === item.asin
-                  ? 'ring-2 ring-red-500'
-                  : ''
+                build[activeTab]?.asin === item.asin ? 'ring-2 ring-red-500' : ''
               }`}
             >
               <div className="aspect-square overflow-hidden mb-2">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
+                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
               </div>
-              <h3 className="text-white font-semibold mb-1 line-clamp-2">
-                {item.title}
-              </h3>
-              <p className="text-green-400 font-bold mb-1">
-                {item.buybox_price?.raw || item.price?.raw || 'N/A'}
-              </p>
+              <h3 className="text-white font-semibold mb-1 line-clamp-2">{item.title}</h3>
+              <p className="text-green-400 font-bold mb-1">{item.buybox_price?.raw || item.price?.raw || 'N/A'}</p>
             </div>
           ))}
         </div>
@@ -201,36 +205,7 @@ export default function BuildPage() {
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
             className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="px-4 py-2 text-gray-300">
-            Page {currentPage} of {totalPages}
-          </span>
+          >Previous</button>
+          <span className="px-4 py-2 text-gray-300">Page {currentPage} of {totalPages}</span>
           <button
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      )}
-
-      {/* Save Build Modal */}
-      {showSaveModal && (
-        <SaveBuildModal
-          onSave={handleSaveBuild}
-          onClose={() => setShowSaveModal(false)}
-        />
-      )}
-
-      {/* Success Message */}
-      {saveSuccess && (
-        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded">
-          Build saved successfully!
-        </div>
-      )}
-    </div>
-  );
-}
+            onClick={() => set<|diff_marker|>
