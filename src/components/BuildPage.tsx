@@ -5,72 +5,369 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import SaveBuildModal from './SaveBuildModal';
-import { fetchAmazonProducts, searchAmazonProducts } from '../lib/rapidapi';
 
 const componentCategories = [
-  { key: 'cpu', name: 'CPU', icon: Cpu, searchTerms: ['Intel', 'AMD', 'processor', 'CPU', 'Core i3', 'Core i5', 'Core i7', 'Core i9', 'Ryzen 3', 'Ryzen 5', 'Ryzen 7', 'Ryzen 9'] },
-  { key: 'gpu', name: 'GPU', icon: Monitor, searchTerms: ['NVIDIA', 'AMD', 'RTX', 'GTX', 'Radeon', 'graphics card', 'GPU', 'GeForce', 'RX 6000', 'RX 7000'] },
-  { key: 'motherboard', name: 'Motherboard', icon: HardDrive, searchTerms: ['motherboard', 'ATX', 'micro ATX', 'mini ITX', 'B550', 'B650', 'X570', 'Z690', 'Z790'] },
-  { key: 'memory', name: 'Memory', icon: Usb, searchTerms: ['DDR4', 'DDR5', 'RAM', 'memory', '16GB', '32GB', '64GB', 'Corsair', 'G.Skill', 'Kingston'] },
-  { key: 'storage', name: 'Storage', icon: HardDrive, searchTerms: ['SSD', 'NVMe', 'M.2', 'hard drive', 'Samsung', 'WD', 'Seagate', '1TB', '2TB', '4TB'] },
-  { key: 'psu', name: 'Power Supply', icon: Zap, searchTerms: ['power supply', 'PSU', '80+', 'modular', '650W', '750W', '850W', '1000W', 'Corsair', 'EVGA'] },
-  { key: 'cpuCooler', name: 'CPU Cooler', icon: Fan, searchTerms: ['CPU cooler', 'air cooler', 'liquid cooling', 'AIO', 'Noctua', 'Cooler Master', 'be quiet!'] },
+  { key: 'cpu', name: 'CPU', icon: Cpu },
+  { key: 'gpu', name: 'GPU', icon: Monitor },
+  { key: 'motherboard', name: 'Motherboard', icon: HardDrive },
+  { key: 'memory', name: 'Memory', icon: Usb },
+  { key: 'storage', name: 'Storage', icon: HardDrive },
+  { key: 'psu', name: 'Power Supply', icon: Zap },
+  { key: 'cpuCooler', name: 'CPU Cooler', icon: Fan },
 ];
+
+// Mock component data
+const mockComponents: Record<string, any[]> = {
+  cpu: [
+    {
+      id: "cpu-1",
+      name: "Intel Core i9-13900K",
+      price: 589.99,
+      image: "https://images.unsplash.com/photo-1555617981-dac3880eac6e?w=400&h=400&fit=crop",
+      rating: 4.5,
+      reviews: 1234,
+      specs: ["24 cores", "5.8 GHz boost", "36MB cache"]
+    },
+    {
+      id: "cpu-2", 
+      name: "AMD Ryzen 9 7900X",
+      price: 429.99,
+      image: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=400&h=400&fit=crop",
+      rating: 4.7,
+      reviews: 892,
+      specs: ["12 cores", "5.6 GHz boost", "76MB cache"]
+    },
+    {
+      id: "cpu-3",
+      name: "Intel Core i7-13700K",
+      price: 409.99,
+      image: "https://images.unsplash.com/photo-1555617981-dac3880eac6e?w=400&h=400&fit=crop",
+      rating: 4.6,
+      reviews: 2156,
+      specs: ["16 cores", "5.4 GHz boost", "30MB cache"]
+    },
+    {
+      id: "cpu-4",
+      name: "AMD Ryzen 7 7700X",
+      price: 349.99,
+      image: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=400&h=400&fit=crop",
+      rating: 4.5,
+      reviews: 1567,
+      specs: ["8 cores", "5.4 GHz boost", "40MB cache"]
+    },
+    {
+      id: "cpu-5",
+      name: "Intel Core i5-13600K",
+      price: 319.99,
+      image: "https://images.unsplash.com/photo-1555617981-dac3880eac6e?w=400&h=400&fit=crop",
+      rating: 4.4,
+      reviews: 3421,
+      specs: ["14 cores", "5.1 GHz boost", "24MB cache"]
+    },
+    {
+      id: "cpu-6",
+      name: "AMD Ryzen 5 7600X",
+      price: 249.99,
+      image: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=400&h=400&fit=crop",
+      rating: 4.3,
+      reviews: 2890,
+      specs: ["6 cores", "5.3 GHz boost", "38MB cache"]
+    }
+  ],
+  gpu: [
+    {
+      id: "gpu-1",
+      name: "NVIDIA GeForce RTX 4090",
+      price: 1599.99,
+      image: "https://images.unsplash.com/photo-1591488320449-011701bb6704?w=400&h=400&fit=crop",
+      rating: 4.8,
+      reviews: 567,
+      specs: ["24GB GDDR6X", "16384 CUDA cores", "450W TDP"]
+    },
+    {
+      id: "gpu-2",
+      name: "AMD Radeon RX 7900 XTX",
+      price: 999.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.6,
+      reviews: 423,
+      specs: ["24GB GDDR6", "6144 stream processors", "355W TDP"]
+    },
+    {
+      id: "gpu-3",
+      name: "NVIDIA GeForce RTX 4080",
+      price: 1199.99,
+      image: "https://images.unsplash.com/photo-1591488320449-011701bb6704?w=400&h=400&fit=crop",
+      rating: 4.7,
+      reviews: 789,
+      specs: ["16GB GDDR6X", "9728 CUDA cores", "320W TDP"]
+    },
+    {
+      id: "gpu-4",
+      name: "AMD Radeon RX 7800 XT",
+      price: 499.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.5,
+      reviews: 1234,
+      specs: ["16GB GDDR6", "3840 stream processors", "263W TDP"]
+    },
+    {
+      id: "gpu-5",
+      name: "NVIDIA GeForce RTX 4070",
+      price: 599.99,
+      image: "https://images.unsplash.com/photo-1591488320449-011701bb6704?w=400&h=400&fit=crop",
+      rating: 4.4,
+      reviews: 2156,
+      specs: ["12GB GDDR6X", "5888 CUDA cores", "200W TDP"]
+    },
+    {
+      id: "gpu-6",
+      name: "AMD Radeon RX 7600",
+      price: 269.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.2,
+      reviews: 1890,
+      specs: ["8GB GDDR6", "2048 stream processors", "165W TDP"]
+    }
+  ],
+  motherboard: [
+    {
+      id: "mb-1",
+      name: "ASUS ROG STRIX X670E-E Gaming WiFi",
+      price: 499.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.4,
+      reviews: 234,
+      specs: ["ATX", "AM5 socket", "WiFi 6E", "PCIe 5.0"]
+    },
+    {
+      id: "mb-2",
+      name: "MSI MAG B650 TOMAHAWK WiFi",
+      price: 229.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.5,
+      reviews: 456,
+      specs: ["ATX", "AM5 socket", "WiFi 6", "PCIe 4.0"]
+    },
+    {
+      id: "mb-3",
+      name: "ASUS PRIME Z790-A WiFi",
+      price: 279.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.3,
+      reviews: 789,
+      specs: ["ATX", "LGA1700", "WiFi 6", "PCIe 5.0"]
+    },
+    {
+      id: "mb-4",
+      name: "MSI PRO B760M-A WiFi",
+      price: 149.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.2,
+      reviews: 567,
+      specs: ["Micro ATX", "LGA1700", "WiFi 6", "PCIe 4.0"]
+    }
+  ],
+  memory: [
+    {
+      id: "ram-1",
+      name: "Corsair Vengeance LPX 32GB (2x16GB) DDR4 3200MHz",
+      price: 89.99,
+      image: "https://images.unsplash.com/photo-1562976540-1502c2145186?w=400&h=400&fit=crop",
+      rating: 4.7,
+      reviews: 3456,
+      specs: ["32GB kit", "DDR4-3200", "CL16", "1.35V"]
+    },
+    {
+      id: "ram-2",
+      name: "G.Skill Trident Z5 32GB (2x16GB) DDR5 5600MHz",
+      price: 159.99,
+      image: "https://images.unsplash.com/photo-1562976540-1502c2145186?w=400&h=400&fit=crop",
+      rating: 4.6,
+      reviews: 1234,
+      specs: ["32GB kit", "DDR5-5600", "CL36", "1.25V"]
+    },
+    {
+      id: "ram-3",
+      name: "Kingston Fury Beast 16GB (2x8GB) DDR4 3200MHz",
+      price: 49.99,
+      image: "https://images.unsplash.com/photo-1562976540-1502c2145186?w=400&h=400&fit=crop",
+      rating: 4.5,
+      reviews: 2890,
+      specs: ["16GB kit", "DDR4-3200", "CL16", "1.35V"]
+    },
+    {
+      id: "ram-4",
+      name: "Corsair Dominator Platinum RGB 64GB (2x32GB) DDR5 5200MHz",
+      price: 399.99,
+      image: "https://images.unsplash.com/photo-1562976540-1502c2145186?w=400&h=400&fit=crop",
+      rating: 4.8,
+      reviews: 567,
+      specs: ["64GB kit", "DDR5-5200", "CL40", "RGB lighting"]
+    }
+  ],
+  storage: [
+    {
+      id: "ssd-1",
+      name: "Samsung 980 PRO 2TB PCIe 4.0 NVMe M.2 SSD",
+      price: 149.99,
+      image: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=400&h=400&fit=crop",
+      rating: 4.8,
+      reviews: 5678,
+      specs: ["2TB capacity", "PCIe 4.0", "7000 MB/s read", "M.2 2280"]
+    },
+    {
+      id: "ssd-2",
+      name: "WD Black SN850X 1TB PCIe Gen4 NVMe M.2 SSD",
+      price: 79.99,
+      image: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=400&h=400&fit=crop",
+      rating: 4.7,
+      reviews: 2345,
+      specs: ["1TB capacity", "PCIe 4.0", "7300 MB/s read", "M.2 2280"]
+    },
+    {
+      id: "ssd-3",
+      name: "Crucial P5 Plus 500GB PCIe 4.0 NVMe M.2 SSD",
+      price: 39.99,
+      image: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=400&h=400&fit=crop",
+      rating: 4.5,
+      reviews: 1890,
+      specs: ["500GB capacity", "PCIe 4.0", "6600 MB/s read", "M.2 2280"]
+    },
+    {
+      id: "ssd-4",
+      name: "Seagate FireCuda 530 4TB PCIe Gen4 NVMe M.2 SSD",
+      price: 299.99,
+      image: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=400&h=400&fit=crop",
+      rating: 4.6,
+      reviews: 1234,
+      specs: ["4TB capacity", "PCIe 4.0", "7300 MB/s read", "M.2 2280"]
+    }
+  ],
+  psu: [
+    {
+      id: "psu-1",
+      name: "Corsair RM1000x 1000W 80+ Gold Fully Modular PSU",
+      price: 179.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.8,
+      reviews: 1567,
+      specs: ["1000W", "80+ Gold", "Fully modular", "10 year warranty"]
+    },
+    {
+      id: "psu-2",
+      name: "EVGA SuperNOVA 850 G6 850W 80+ Gold Modular PSU",
+      price: 139.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.6,
+      reviews: 987,
+      specs: ["850W", "80+ Gold", "Fully modular", "10 year warranty"]
+    },
+    {
+      id: "psu-3",
+      name: "Seasonic Focus GX-750 750W 80+ Gold Modular PSU",
+      price: 119.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.7,
+      reviews: 2345,
+      specs: ["750W", "80+ Gold", "Fully modular", "10 year warranty"]
+    },
+    {
+      id: "psu-4",
+      name: "be quiet! Straight Power 11 650W 80+ Gold PSU",
+      price: 99.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.5,
+      reviews: 1678,
+      specs: ["650W", "80+ Gold", "Semi-modular", "5 year warranty"]
+    }
+  ],
+  cpuCooler: [
+    {
+      id: "cooler-1",
+      name: "Noctua NH-D15 Premium CPU Cooler",
+      price: 109.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.9,
+      reviews: 2345,
+      specs: ["Dual tower", "140mm fans", "165mm height", "6 year warranty"]
+    },
+    {
+      id: "cooler-2",
+      name: "Corsair H100i RGB PLATINUM 240mm Liquid CPU Cooler",
+      price: 159.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.5,
+      reviews: 1789,
+      specs: ["240mm radiator", "RGB lighting", "Liquid cooling", "5 year warranty"]
+    },
+    {
+      id: "cooler-3",
+      name: "be quiet! Dark Rock Pro 4 CPU Cooler",
+      price: 89.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.7,
+      reviews: 1456,
+      specs: ["Dual tower", "Silent operation", "163mm height", "3 year warranty"]
+    },
+    {
+      id: "cooler-4",
+      name: "NZXT Kraken X63 280mm Liquid CPU Cooler",
+      price: 149.99,
+      image: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop",
+      rating: 4.4,
+      reviews: 987,
+      specs: ["280mm radiator", "RGB lighting", "CAM software", "6 year warranty"]
+    }
+  ]
+};
 
 export default function BuildPage({ onBackToHome }: { onBackToHome: () => void }) {
   const [activeTab, setActiveTab] = useState('cpu');
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [build, setBuild] = useState<Record<string, any>>({});
   const [showSaveModal, setShowSaveModal] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [sortBy, setSortBy] = useState('relevance');
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
-  const [showFilters, setShowFilters] = useState(false);
+  const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const { user } = useAuth();
 
   const currentCategory = componentCategories.find(cat => cat.key === activeTab);
 
   useEffect(() => {
-    loadProducts();
-  }, [activeTab, currentPage, sortBy]);
+    loadComponents();
+  }, [activeTab]);
 
-  const loadProducts = async (customQuery?: string) => {
+  useEffect(() => {
+    filterComponents();
+  }, [items, searchQuery]);
+
+  const loadComponents = () => {
     setLoading(true);
-    setError('');
-    try {
-      console.log(`Loading products for category: ${activeTab}, page: ${currentPage}`);
-      
-      let products;
-      if (customQuery || searchQuery) {
-        // Use custom search query
-        const query = customQuery || searchQuery;
-        products = await searchAmazonProducts(query, currentPage, sortBy, priceRange);
-      } else {
-        // Load category-specific products with multiple search terms
-        products = await fetchAmazonProducts(activeTab, currentPage, sortBy, priceRange);
-      }
-      
-      console.log(`Loaded ${products.items?.length || 0} products`);
-      setItems(products.items || []);
-      setTotalPages(Math.min(products.totalPages || 1, 10)); // Limit to 10 pages for performance
-    } catch (error) {
-      console.error('Failed to load products:', error);
-      setError('Failed to load products. Please try again.');
-      setItems([]);
-    } finally {
+    // Simulate loading delay
+    setTimeout(() => {
+      const categoryItems = mockComponents[activeTab] || [];
+      setItems(categoryItems);
       setLoading(false);
+    }, 300);
+  };
+
+  const filterComponents = () => {
+    if (!searchQuery.trim()) {
+      setFilteredItems(items);
+      return;
     }
+
+    const filtered = items.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.specs.some((spec: string) => spec.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+    setFilteredItems(filtered);
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1);
-    loadProducts(searchQuery);
+    filterComponents();
   };
 
   const handleSelect = (component: any) => {
@@ -79,48 +376,38 @@ export default function BuildPage({ onBackToHome }: { onBackToHome: () => void }
 
   const handleSaveBuild = async (buildName: string, description: string) => {
     if (!user) return;
+    
+    const totalPrice = Object.values(build).reduce((sum, part: any) => {
+      return sum + (part?.price || 0);
+    }, 0);
+
     const buildData = {
       name: buildName,
       description: description || null,
       user_id: user.id,
       components: build,
-      total_price: Object.values(build).reduce((sum, part: any) => {
-        const price = parseFloat((part?.product_price || '0').replace(/[^0-9.]/g, '')) || 0;
-        return sum + price;
-      }, 0),
+      total_price: totalPrice,
     };
 
     const { error } = await supabase.from("builds").insert([buildData]);
     if (!error) {
-      setSaveSuccess(true);
+      alert('Build saved successfully!');
     } else {
       console.error("Error saving build:", error);
+      alert('Failed to save build. Please try again.');
     }
     setShowSaveModal(false);
   };
 
   const handleCategoryChange = (newCategory: string) => {
     setActiveTab(newCategory);
-    setCurrentPage(1);
     setSearchQuery('');
   };
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const applyFilters = () => {
-    setCurrentPage(1);
-    loadProducts();
-    setShowFilters(false);
-  };
-
-  const clearFilters = () => {
-    setPriceRange({ min: '', max: '' });
-    setSortBy('relevance');
-    setCurrentPage(1);
-    loadProducts();
+  const getTotalPrice = () => {
+    return Object.values(build).reduce((sum, part: any) => {
+      return sum + (part?.price || 0);
+    }, 0);
   };
 
   return (
@@ -142,13 +429,18 @@ export default function BuildPage({ onBackToHome }: { onBackToHome: () => void }
                 Build Your PC
               </h1>
             </div>
-            <button
-              onClick={() => setShowSaveModal(true)}
-              className="flex items-center space-x-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300"
-            >
-              <Save className="h-5 w-5" />
-              <span>Save Build</span>
-            </button>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-300">
+                Total: <span className="text-green-400 font-bold">${getTotalPrice().toFixed(2)}</span>
+              </div>
+              <button
+                onClick={() => setShowSaveModal(true)}
+                className="flex items-center space-x-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300"
+              >
+                <Save className="h-5 w-5" />
+                <span>Save Build</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -168,121 +460,52 @@ export default function BuildPage({ onBackToHome }: { onBackToHome: () => void }
             >
               <cat.icon className="h-4 w-4" />
               <span>{cat.name}</span>
+              {build[cat.key] && (
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              )}
             </button>
           ))}
         </div>
 
-        {/* Search and Filters */}
-        <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Bar */}
-            <form onSubmit={handleSearch} className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={`Search ${currentCategory?.name} components...`}
-                  className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-colors"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded-md transition-colors"
-                >
-                  Search
-                </button>
-              </div>
-            </form>
-
-            {/* Filter Toggle */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-lg transition-colors"
-            >
-              <Filter className="h-5 w-5" />
-              <span>Filters</span>
-            </button>
-          </div>
-
-          {/* Expanded Filters */}
-          {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-600/50">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Sort By */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Sort By</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500/50"
-                  >
-                    <option value="relevance">Relevance</option>
-                    <option value="price_low_to_high">Price: Low to High</option>
-                    <option value="price_high_to_low">Price: High to Low</option>
-                    <option value="newest">Newest</option>
-                    <option value="customer_review">Customer Reviews</option>
-                  </select>
-                </div>
-
-                {/* Price Range */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Price Range</label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={priceRange.min}
-                      onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
-                      className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-red-500/50"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      value={priceRange.max}
-                      onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
-                      className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-red-500/50"
-                    />
-                  </div>
-                </div>
-
-                {/* Filter Actions */}
-                <div className="flex items-end space-x-2">
-                  <button
-                    onClick={applyFilters}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
-                  >
-                    Apply
-                  </button>
-                  <button
-                    onClick={clearFilters}
-                    className="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded-lg transition-colors"
-                  >
-                    Clear
-                  </button>
-                </div>
-              </div>
+        {/* Search Bar */}
+        <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 mb-6">
+          <form onSubmit={handleSearch} className="flex gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Search ${currentCategory?.name} components...`}
+                className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-colors"
+              />
             </div>
-          )}
+            <button
+              type="submit"
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors"
+            >
+              Search
+            </button>
+          </form>
         </div>
 
-        {/* Quick Search Suggestions */}
-        {!searchQuery && currentCategory && (
-          <div className="mb-6">
-            <p className="text-sm text-gray-400 mb-3">Popular {currentCategory.name} searches:</p>
-            <div className="flex flex-wrap gap-2">
-              {currentCategory.searchTerms.slice(0, 8).map((term) => (
-                <button
-                  key={term}
-                  onClick={() => {
-                    setSearchQuery(term);
-                    setCurrentPage(1);
-                    loadProducts(term);
-                  }}
-                  className="bg-gray-700/50 hover:bg-red-600/20 text-gray-300 hover:text-red-300 px-3 py-1 rounded-full text-sm transition-colors border border-gray-600/30 hover:border-red-500/30"
-                >
-                  {term}
-                </button>
+        {/* Selected Component Summary */}
+        {Object.keys(build).length > 0 && (
+          <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 p-4 mb-6">
+            <h3 className="text-lg font-semibold text-white mb-3">Current Build</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {componentCategories.map((cat) => (
+                <div key={cat.key} className="flex items-center space-x-3">
+                  <cat.icon className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-300">{cat.name}:</span>
+                  {build[cat.key] ? (
+                    <span className="text-sm text-green-400 font-medium truncate">
+                      {build[cat.key].name}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-500">Not selected</span>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -296,116 +519,63 @@ export default function BuildPage({ onBackToHome }: { onBackToHome: () => void }
           </div>
         )}
 
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
-            <p className="text-red-400">{error}</p>
+        {/* Components Grid */}
+        {!loading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredItems.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => handleSelect(item)}
+                className={`bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden cursor-pointer transition-all duration-300 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/10 ${
+                  build[activeTab]?.id === item.id ? 'ring-2 ring-red-500 border-red-500' : ''
+                }`}
+              >
+                <div className="aspect-square overflow-hidden">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+                <div className="p-4">
+                  <h3 className="text-white text-sm font-semibold mb-2 line-clamp-2 leading-tight">
+                    {item.name}
+                  </h3>
+                  <p className="text-green-400 font-bold text-lg mb-2">
+                    ${item.price.toFixed(2)}
+                  </p>
+                  <div className="flex items-center justify-between text-xs text-gray-400 mb-3">
+                    <span>★ {item.rating}</span>
+                    <span>{item.reviews.toLocaleString()} reviews</span>
+                  </div>
+                  <div className="space-y-1">
+                    {item.specs.slice(0, 2).map((spec: string, index: number) => (
+                      <div key={index} className="text-xs text-gray-400">
+                        • {spec}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Products Grid */}
-        {!loading && items.length > 0 && (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-              {items.map((item, index) => (
-                <div
-                  key={item.asin || index}
-                  onClick={() => handleSelect(item)}
-                  className={`bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden cursor-pointer transition-all duration-300 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/10 ${
-                    build[activeTab]?.asin === item.asin ? 'ring-2 ring-red-500 border-red-500' : ''
-                  }`}
-                >
-                  <div className="aspect-square overflow-hidden">
-                    <img
-                      src={item.product_photo || 'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop'}
-                      alt={item.product_title}
-                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=400&fit=crop';
-                      }}
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-white text-sm font-semibold mb-2 line-clamp-2 leading-tight">
-                      {item.product_title}
-                    </h3>
-                    <p className="text-green-400 font-bold text-lg mb-2">
-                      {item.product_price || 'Price not available'}
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-gray-400">
-                      <span>{item.product_star_rating || 'No rating'}</span>
-                      <span>{item.product_num_reviews || '0'} reviews</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center space-x-4">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  <span>Previous</span>
-                </button>
-                
-                <div className="flex space-x-2">
-                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                    const page = i + 1;
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`px-3 py-2 rounded-lg transition-colors ${
-                          currentPage === page
-                            ? 'bg-red-600 text-white'
-                            : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  <span>Next</span>
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            )}
-          </>
-        )}
-
         {/* No Results */}
-        {!loading && items.length === 0 && !error && (
+        {!loading && filteredItems.length === 0 && (
           <div className="text-center py-12">
             <div className="flex items-center justify-center w-24 h-24 bg-gray-800/50 rounded-full mb-6 mx-auto">
               <Search className="h-12 w-12 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No Products Found</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">No Components Found</h3>
             <p className="text-gray-400 mb-6">
-              Try adjusting your search terms or filters to find more products.
+              Try adjusting your search terms to find more components.
             </p>
             <button
-              onClick={() => {
-                setSearchQuery('');
-                setPriceRange({ min: '', max: '' });
-                setSortBy('relevance');
-                setCurrentPage(1);
-                loadProducts();
-              }}
+              onClick={() => setSearchQuery('')}
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
             >
-              Reset Search
+              Clear Search
             </button>
           </div>
         )}
