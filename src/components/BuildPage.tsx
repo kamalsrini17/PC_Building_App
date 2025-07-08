@@ -10,18 +10,20 @@ import SaveBuildModal from './SaveBuildModal';
 const RF_API_URL = "https://api.rainforestapi.com/request";
 const RF_API_KEY = "1D099C83FD6D43B4AF1FCE622F015C71";
 
-const componentCategories = [
-  { key: 'cpu',          name: 'CPU',           icon: Cpu },
-  { key: 'gpu',          name: 'GPU',           icon: Monitor },
-  { key: 'motherboard',  name: 'Motherboard',   icon: HardDrive },
-  { key: 'RAM',       name: 'Memory',        icon: Usb },
-  { key: 'PC Storage',      name: 'Storage',       icon: HardDrive },
-  { key: 'psu',          name: 'Power Supply',  icon: Zap },
-  { key: 'cpuCooler',    name: 'CPU Cooler',    icon: Fan },
-  { key: 'caseFans',     name: 'Case Fans',     icon: Fan },
-  { key: 'PCcase',         name: 'PC Case',       icon: Monitor },
-  { key: 'PCaccessories',  name: 'PC Accessories',icon: Usb },
-];
+// ─── category → list of keywords to match in item.title ───
+const categoryKeywords: Record<string,string[]> = {
+  cpu:            ['cpu','processor','intel','amd','ryzen'],
+  gpu:            ['gpu','graphics card','nvidia','radeon','rtx','gtx'],
+  motherboard:    ['motherboard','mobo','atx','microatx','socket'],
+  RAM:            ['ram','memory','ddr3','ddr4','ddr5','module'],
+  'PC Storage':   ['ssd','hdd','nvme','hard drive','m.2'],
+  psu:            ['power supply','psu','watt','modular'],
+  cpuCooler:      ['cooler','heatsink','liquid cooler','cpu fan'],
+  caseFans:       ['case fan','120mm','140mm','pc fan'],
+  PCcase:         ['pc case','mid tower','atx case','chassis','tower'],
+  PCaccessories:  ['accessor','screw','standoff','cable','anti-sag','rgb']
+};
+
 
 
 export default function BuildPage() {
