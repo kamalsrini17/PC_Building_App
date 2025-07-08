@@ -17,18 +17,18 @@ import SaveBuildModal from './SaveBuildModal';
 const RF_API_URL = "https://api.rainforestapi.com/request";
 const RF_API_KEY = "1D099C83FD6D43B4AF1FCE622F015C71";
 
-// ─── category → list of keywords to match in item.title ───
-const categoryKeywords: Record<string, string[]> = {
-  cpu:            ['cpu', 'processor', 'intel', 'amd', 'ryzen'],
-  gpu:            ['gpu', 'graphics card', 'nvidia', 'radeon', 'rtx', 'gtx'],
-  motherboard:    ['motherboard', 'mobo', 'atx', 'microatx', 'socket'],
-  ram:            ['ram', 'memory', 'ddr3', 'ddr4', 'ddr5', 'module'],
-  pcstorage:      ['ssd', 'hdd', 'nvme', 'hard drive', 'm.2'],
-  psu:            ['power supply', 'psu', 'watt', 'modular'],
-  cpucooler:      ['cooler', 'heatsink', 'liquid cooler', 'cpu fan'],
-  casefans:       ['case fan', '120mm', '140mm', 'pc fan'],
-  pccase:         ['pc case', 'mid tower', 'atx case', 'chassis', 'tower'],
-  pcaccessories:  ['accessor', 'screw', 'standoff', 'cable', 'anti-sag', 'rgb'],
+// ─── Amazon browse_node IDs per category ───
+const browseNodes: Record<string,string> = {
+  cpu: '2335752011',         // CPUs & Processors
+  gpu: '284822',             // Graphics Cards
+  motherboard: '194322',     // Motherboards
+  ram: '17923671011',        // Memory (RAM)
+  pcstorage: '17923946011',  // Internal Storage (SSD & HDD)
+  psu: '2231242011',         // Power Supplies
+  cpucooler: '17923683011',  // CPU Coolers & Heatsinks
+  casefans: '17923689011',   // Case Fans
+  pccase: '572238',          // Computer Cases
+  pcaccessories: '17923656011' // PC Accessories
 };
 
 // ─── tabs with labels and icons ───
@@ -57,32 +57,33 @@ export default function BuildPage() {
   const [showSaveModal, setShowSaveModal] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
-  // Fetch via Rainforest & filter by category keywords
+  // Fetch via Rainforest with category-specific browse_node
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
       setError('');
       try {
-        const term    = encodeURIComponent(activeTab);
-        const url     = `${RF_API_URL}?api_key=${RF_API_KEY}&type=search&amazon_domain=amazon.com&search_term=${term}&page=${currentPage}`;
-        const res     = await fetch(url);
-        const json    = await res.json();
+        const term      = encodeURIComponent(activeTab);
+        const nodeId    = browseNodes[activeTab];
+        const urlParams = new URLSearchParams({
+          api_key: RF_API_KEY,
+          type: 'search',
+          amazon_domain: 'amazon.com',
+          search_term: term,
+          page: currentPage.toString(),
+        });
+        if (nodeId) {
+          urlParams.set('browse_node', nodeId);
+        }
+        const url = `${RF_API_URL}?${urlParams.toString()}`;
+
+        const res  = await fetch(url);
+        const json = await res.json();
         console.log('Rainforest response:', json);
 
-        // Raw results
         const results = json.search_results || [];
-        // Normalize activeTab key
-        const normKey = activeTab.replace(/\s+/g, '').toLowerCase();
-        // Lookup keywords and filter
-        const keywords = categoryKeywords[normKey] || [];
-        const filtered = results.filter(item => {
-          const title = (item.title || '').toLowerCase();
-          return keywords.some(kw => title.includes(kw));
-        });
-        // Only show filtered items
-        setItems(filtered);
+        setItems(results);
 
-        // Pagination
         const total = json.pagination?.total_pages || 1;
         setTotalPages(Math.min(total, 10));
       } catch (err) {
@@ -187,38 +188,3 @@ export default function BuildPage() {
               </h3>
               <p className="text-green-400 font-bold mb-1">
                 {item.buybox_price?.raw || item.price?.raw || 'N/A'}
-              </p>
-              <div className="flex text-xs text-gray-400 justify-between">
-                <span>{item.rating ? `${item.rating.toFixed(1)}★` : '–'}</span>
-                <span>{item.ratings_total || 0} reviews</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Pagination */}
-      <div className="flex justify-center space-x-2 mt-6">
-        <button
-          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-          disabled={currentPage === 1}
-          className="px-3 py-1 bg-gray-800 rounded disabled:opacity-50"
-        >Prev</button>
-        <span className="px-3 py-1">{currentPage} / {totalPages}</span>
-        <button
-          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-          disabled={currentPage === totalPages}
-          className="px-3 py-1 bg-gray-800 rounded disabled:opacity-50"
-        >Next</button>
-      </div>
-
-      {/* Save modal */}
-      <SaveBuildModal
-        isOpen={showSaveModal}
-        onClose={() => setShowSaveModal(false)}
-        onSave={handleSaveBuild}
-        success={saveSuccess}
-      />
-    </div>
-  );
-}
