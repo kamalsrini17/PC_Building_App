@@ -208,4 +208,21 @@ export default function BuildPage() {
           >Previous</button>
           <span className="px-4 py-2 text-gray-300">Page {currentPage} of {totalPages}</span>
           <button
-            onClick={() => set<|diff_marker|>
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50"
+          >Next</button>
+        </div>
+      )}
+
+      {/* Save Modal */}
+      {showSaveModal && (
+        <SaveBuildModal
+          onSave={handleSaveBuild}
+          onClose={() => setShowSaveModal(false)}
+          success={saveSuccess}
+        />
+      )}
+    </div>
+  );
+}
