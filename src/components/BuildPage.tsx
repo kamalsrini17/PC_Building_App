@@ -58,7 +58,14 @@ export default function BuildPage() {
         console.log("Rainforest response:", json);
 
         const results = json.search_results || [];
-        setItems(results);
+// run our filter
+const keywords = categoryKeywords[activeTab] || [];
+const filtered = results.filter(item => {
+  const title = (item.title || '').toLowerCase();
+  return keywords.some(kw => title.includes(kw));
+});
+// if our filter found nothing, fall back to everything
+setItems(filtered.length > 0 ? filtered : results);
 
         const total = json.pagination?.total_pages || 1;
         setTotalPages(Math.min(total, 10));
