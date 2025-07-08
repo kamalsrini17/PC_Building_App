@@ -11,14 +11,18 @@ const RF_API_URL = "https://api.rainforestapi.com/request";
 const RF_API_KEY = "1D099C83FD6D43B4AF1FCE622F015C71";
 
 const componentCategories = [
-  { key: 'cpu', name: 'CPU', icon: Cpu },
-  { key: 'gpu', name: 'GPU', icon: Monitor },
-  { key: 'motherboard', name: 'Motherboard', icon: HardDrive },
-  { key: 'memory', name: 'Memory', icon: Usb },
-  { key: 'storage', name: 'Storage', icon: HardDrive },
-  { key: 'psu', name: 'Power Supply', icon: Zap },
-  { key: 'cpuCooler', name: 'CPU Cooler', icon: Fan },
+  { key: 'cpu',          name: 'CPU',            icon: Cpu },
+  { key: 'gpu',          name: 'GPU',            icon: Monitor },
+  { key: 'motherboard',  name: 'Motherboard',    icon: HardDrive },
+  { key: 'memory',       name: 'Memory',         icon: Usb },
+  { key: 'storage',      name: 'Storage',        icon: HardDrive },
+  { key: 'psu',          name: 'Power Supply',   icon: Zap },
+  { key: 'cpuCooler',    name: 'CPU Cooler',     icon: Fan },
+  { key: 'caseFans',     name: 'Case Fans',      icon: Fan },
+  { key: 'case',         name: 'Case',           icon: Monitor },
+  { key: 'accessories',  name: 'Accessories',    icon: Usb },
 ];
+
 
 export default function BuildPage() {
   const { user } = useAuth();
