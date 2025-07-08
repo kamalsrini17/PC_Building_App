@@ -20,6 +20,8 @@ const componentCategories = [
 export default function BuildPage() {
   const [activeTab, setActiveTab] = useState('cpu');
   const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [build, setBuild] = useState<Record<string, any>>({});
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -27,12 +29,19 @@ export default function BuildPage() {
 
   useEffect(() => {
     const loadProducts = async () => {
+      setLoading(true);
+      setError('');
       try {
+        console.log(`Loading products for category: ${activeTab}`);
         const products = await fetchAmazonProducts(activeTab);
+        console.log(`Loaded ${products.length} products`);
         setItems(products);
       } catch (error) {
         console.error('Failed to load products:', error);
-        setItems([]);
+        setError('Failed to load products. Showing sample data.');
+        // Don't set empty array, let the API function handle fallbacks
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -86,6 +95,28 @@ export default function BuildPage() {
         </button>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading {componentCategories.find(c => c.key === activeTab)?.name} components...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
+          <p className="text-yellow-400 text-sm">{error}</p>
+        </div>
+      )}
+
+      {/* No Items State */}
+      {!loading && items.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-gray-400">No components found for {componentCategories.find(c => c.key === activeTab)?.name}</p>
+        </div>
+      )}
+
       <div className="flex space-x-4 mb-6 overflow-x-auto pb-2">
         {componentCategories.map((cat) => (
           <button
@@ -101,7 +132,9 @@ export default function BuildPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Products Grid */}
+      {!loading && items.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((item) => (
           <div
             key={item.asin}
@@ -122,7 +155,8 @@ export default function BuildPage() {
             </p>
           </div>
         ))}
-      </div>
+        </div>
+      )}
 
       <SaveBuildModal
         isOpen={showSaveModal}
