@@ -15,7 +15,7 @@ import SaveBuildModal from './SaveBuildModal';
 
 // ─────────── Rainforest API ───────────
 const RF_API_URL = 'https://api.rainforestapi.com/request';
-const RF_API_KEY = '1D099C83FD6D43B4AF1FCE622F015C71';
+const RF_API_KEY = import.meta.env.VITE_RAINFOREST_API_KEY;
 
 // ─── Amazon browse_node IDs per category ───
 const browseNodes: Record<string, string> = {
@@ -60,6 +60,13 @@ export default function BuildPage() {
   // 1) Populate grid via type=search + browse_node
   useEffect(() => {
     const loadProducts = async () => {
+      // Check if API key is available
+      if (!RF_API_KEY) {
+        setError('Rainforest API key not configured. Please add VITE_RAINFOREST_API_KEY to your environment variables.');
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError('');
       try {
@@ -76,6 +83,11 @@ export default function BuildPage() {
 
         const url = `${RF_API_URL}?${params.toString()}`;
         const res = await fetch(url);
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
         const json = await res.json();
         console.log('Search response:', json);
 
@@ -84,7 +96,7 @@ export default function BuildPage() {
         setTotalPages(Math.min(total, 10));
       } catch (err) {
         console.error(err);
-        setError('Failed to load products.');
+        setError('Failed to load products. Please check your API configuration.');
         setItems([]);
       } finally {
         setLoading(false);
