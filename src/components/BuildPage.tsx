@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Cpu, Monitor, HardDrive, Usb, Zap, Fan, ArrowLeft, Save
+  Cpu,
+  Monitor,
+  HardDrive,
+  Usb,
+  Zap,
+  Fan,
+  ArrowLeft,
+  Save
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -11,80 +18,76 @@ const RF_API_URL = "https://api.rainforestapi.com/request";
 const RF_API_KEY = "1D099C83FD6D43B4AF1FCE622F015C71";
 
 // ─── category → list of keywords to match in item.title ───
-const categoryKeywords: Record<string,string[]> = {
-  cpu:            ['cpu','processor','intel','amd','ryzen'],
-  gpu:            ['gpu','graphics card','nvidia','radeon','rtx','gtx'],
-  motherboard:    ['motherboard','mobo','atx','microatx','socket'],
-  RAM:            ['ram','memory','ddr3','ddr4','ddr5','module'],
-  'PC Storage':   ['ssd','hdd','nvme','hard drive','m.2'],
-  psu:            ['power supply','psu','watt','modular'],
-  cpuCooler:      ['cooler','heatsink','liquid cooler','cpu fan'],
-  caseFans:       ['case fan','120mm','140mm','pc fan'],
-  PCcase:         ['pc case','mid tower','atx case','chassis','tower'],
-  PCaccessories:  ['accessor','screw','standoff','cable','anti-sag','rgb']
+const categoryKeywords: Record<string, string[]> = {
+  cpu:            ['cpu', 'processor', 'intel', 'amd', 'ryzen'],
+  gpu:            ['gpu', 'graphics card', 'nvidia', 'radeon', 'rtx', 'gtx'],
+  motherboard:    ['motherboard', 'mobo', 'atx', 'microatx', 'socket'],
+  ram:            ['ram', 'memory', 'ddr3', 'ddr4', 'ddr5', 'module'],
+  pcstorage:      ['ssd', 'hdd', 'nvme', 'hard drive', 'm.2'],
+  psu:            ['power supply', 'psu', 'watt', 'modular'],
+  cpucooler:      ['cooler', 'heatsink', 'liquid cooler', 'cpu fan'],
+  casefans:       ['case fan', '120mm', '140mm', 'pc fan'],
+  pccase:         ['pc case', 'mid tower', 'atx case', 'chassis', 'tower'],
+  pcaccessories:  ['accessor', 'screw', 'standoff', 'cable', 'anti-sag', 'rgb'],
 };
 
+// ─── tabs with labels and icons ───
 const componentCategories = [
-  { key: 'cpu', name: 'CPU', icon: Cpu },
-  { key: 'gpu', name: 'GPU', icon: Monitor },
-  { key: 'motherboard', name: 'Motherboard', icon: Cpu },
-  { key: 'RAM', name: 'RAM', icon: HardDrive },
-  { key: 'PC Storage', name: 'Storage', icon: HardDrive },
-  { key: 'psu', name: 'PSU', icon: Zap },
-  { key: 'cpuCooler', name: 'CPU Cooler', icon: Fan },
-  { key: 'caseFans', name: 'Case Fans', icon: Fan },
-  { key: 'PCcase', name: 'PC Case', icon: Monitor },
-  { key: 'PCaccessories', name: 'Accessories', icon: Usb }
+  { key: 'cpu',            name: 'CPU',            icon: Cpu },
+  { key: 'gpu',            name: 'GPU',            icon: Monitor },
+  { key: 'motherboard',    name: 'Motherboard',    icon: HardDrive },
+  { key: 'ram',            name: 'Memory',         icon: Usb },
+  { key: 'pcstorage',      name: 'Storage',        icon: HardDrive },
+  { key: 'psu',            name: 'Power Supply',   icon: Zap },
+  { key: 'cpucooler',      name: 'CPU Cooler',     icon: Fan },
+  { key: 'casefans',       name: 'Case Fans',      icon: Fan },
+  { key: 'pccase',         name: 'PC Case',        icon: Monitor },
+  { key: 'pcaccessories',  name: 'PC Accessories', icon: Usb },
 ];
-
-
 
 export default function BuildPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('cpu');
+  const [activeTab, setActiveTab] = useState<string>('cpu');
   const [items, setItems] = useState<any[]>([]);
   const [build, setBuild] = useState<Record<string, any>>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [showSaveModal, setShowSaveModal] = useState<boolean>(false);
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
-  // Fetch via Rainforest
+  // Fetch via Rainforest & filter by category keywords
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
       setError('');
       try {
-        const termRaw = activeTab;
-        const term    = encodeURIComponent(termRaw);
-        const url = `${RF_API_URL}`
-          + `?api_key=${RF_API_KEY}`
-          + `&type=search`
-          + `&amazon_domain=amazon.com`
-          + `&search_term=${term}`
-          + `&page=${currentPage}`;
+        const term    = encodeURIComponent(activeTab);
+        const url     = `${RF_API_URL}?api_key=${RF_API_KEY}&type=search&amazon_domain=amazon.com&search_term=${term}&page=${currentPage}`;
+        const res     = await fetch(url);
+        const json    = await res.json();
+        console.log('Rainforest response:', json);
 
-        const res  = await fetch(url);
-        const json = await res.json();
-        console.log("Rainforest response:", json);
-
+        // Raw results
         const results = json.search_results || [];
-// run our filter
-const keywords = categoryKeywords[activeTab] || [];
-const filtered = results.filter(item => {
-  const title = (item.title || '').toLowerCase();
-  return keywords.some(kw => title.includes(kw));
-});
-// if our filter found nothing, fall back to everything
-setItems(filtered.length > 0 ? filtered : results);
+        // Normalize activeTab key
+        const normKey = activeTab.replace(/\s+/g, '').toLowerCase();
+        // Lookup keywords and filter
+        const keywords = categoryKeywords[normKey] || [];
+        const filtered = results.filter(item => {
+          const title = (item.title || '').toLowerCase();
+          return keywords.some(kw => title.includes(kw));
+        });
+        // Only show filtered items
+        setItems(filtered);
 
+        // Pagination
         const total = json.pagination?.total_pages || 1;
         setTotalPages(Math.min(total, 10));
       } catch (err) {
-        console.error(err);
-        setError("Failed to load products.");
+        console.error('Load error:', err);
+        setError('Failed to load products.');
         setItems([]);
       } finally {
         setLoading(false);
@@ -101,22 +104,17 @@ setItems(filtered.length > 0 ? filtered : results);
   const handleSaveBuild = async (name: string) => {
     if (!user) return;
     const totalPrice = Object.values(build).reduce((sum, part: any) => {
-      const raw = part.buybox_price?.raw || part.price?.raw || "$0";
+      const raw = part.buybox_price?.raw || part.price?.raw || '$0';
       const num = parseFloat(raw.replace(/[^0-9.]/g, '')) || 0;
       return sum + num;
     }, 0);
 
     const { error: saveErr } = await supabase
       .from('builds')
-      .insert([{
-        name,
-        user_id: user.id,
-        components: build,
-        total_price: totalPrice
-      }]);
+      .insert([{ name, user_id: user.id, components: build, total_price: totalPrice }]);
 
     if (!saveErr) setSaveSuccess(true);
-    else console.error(saveErr);
+    else console.error('Save error:', saveErr);
     setShowSaveModal(false);
   };
 
@@ -125,7 +123,7 @@ setItems(filtered.length > 0 ? filtered : results);
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={() => (window.location.href = '/')}
             className="flex items-center text-gray-400 hover:text-red-400"
           >
             <ArrowLeft className="h-5 w-5 mr-2" /> Back
@@ -140,11 +138,15 @@ setItems(filtered.length > 0 ? filtered : results);
         </button>
       </div>
 
+      {/* Tab bar */}
       <div className="flex space-x-4 mb-6 overflow-x-auto pb-2">
         {componentCategories.map(cat => (
           <button
             key={cat.key}
-            onClick={() => { setActiveTab(cat.key); setCurrentPage(1); }}
+            onClick={() => {
+              setActiveTab(cat.key);
+              setCurrentPage(1);
+            }}
             className={`flex items-center px-4 py-2 rounded ${
               activeTab === cat.key
                 ? 'bg-red-600 text-white'
@@ -157,43 +159,43 @@ setItems(filtered.length > 0 ? filtered : results);
         ))}
       </div>
 
+      {/* Error & Loading */}
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      {loading
-        ? <p>Loading...</p>
-        : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.map(item => (
-              <div
-                key={item.asin}
-                onClick={() => handleSelect(item)}
-                className={`bg-gray-800 rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${
-                  build[activeTab]?.asin === item.asin
-                    ? 'ring-2 ring-red-500'
-                    : ''
-                }`}
-              >
-                <div className="aspect-square overflow-hidden mb-2">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <h3 className="text-white font-semibold mb-1 line-clamp-2">
-                  {item.title}
-                </h3>
-                <p className="text-green-400 font-bold mb-1">
-                  {item.buybox_price?.raw || item.price?.raw || "N/A"}
-                </p>
-                <div className="flex text-xs text-gray-400 justify-between">
-                  <span>{item.rating ? `${item.rating.toFixed(1)}★` : '–'}</span>
-                  <span>{item.ratings_total || 0} reviews</span>
-                </div>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {items.map(item => (
+            <div
+              key={item.asin}
+              onClick={() => handleSelect(item)}
+              className={`bg-gray-800 rounded-lg p-4 cursor-pointer shadow hover:shadow-lg transition ${
+                build[activeTab]?.asin === item.asin
+                  ? 'ring-2 ring-red-500'
+                  : ''
+              }`}
+            >
+              <div className="aspect-square overflow-hidden mb-2">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ))}
-          </div>
-        )
-      }
+              <h3 className="text-white font-semibold mb-1 line-clamp-2">
+                {item.title}
+              </h3>
+              <p className="text-green-400 font-bold mb-1">
+                {item.buybox_price?.raw || item.price?.raw || 'N/A'}
+              </p>
+              <div className="flex text-xs text-gray-400 justify-between">
+                <span>{item.rating ? `${item.rating.toFixed(1)}★` : '–'}</span>
+                <span>{item.ratings_total || 0} reviews</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Pagination */}
       <div className="flex justify-center space-x-2 mt-6">
@@ -210,6 +212,7 @@ setItems(filtered.length > 0 ? filtered : results);
         >Next</button>
       </div>
 
+      {/* Save modal */}
       <SaveBuildModal
         isOpen={showSaveModal}
         onClose={() => setShowSaveModal(false)}
