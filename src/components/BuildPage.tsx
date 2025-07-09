@@ -23,12 +23,26 @@ const browseNodes: Record<string, string> = {
   gpu: '284822',
   motherboard: '194322',
   ram: '17923671011',
-  pcstorage: '17923671011',
+  pcstorage: '1292110011', // Computer Hard Drives & Storage
   psu: '2231242011',
   cpucooler: '17923683011',
   casefans: '17923689011',
   pccase: '572238',
   pcaccessories: '17923656011'
+};
+
+// ─── Enhanced search terms per category ───
+const searchTerms: Record<string, string> = {
+  cpu: 'processor CPU',
+  gpu: 'graphics card GPU',
+  motherboard: 'motherboard',
+  ram: 'memory RAM DDR4 DDR5',
+  pcstorage: 'SSD hard drive storage',
+  psu: 'power supply PSU',
+  cpucooler: 'CPU cooler',
+  casefans: 'case fans PC cooling',
+  pccase: 'PC case computer case',
+  pcaccessories: 'PC accessories computer'
 };
 
 // ─── Tabs ───
@@ -70,7 +84,7 @@ export default function BuildPage() {
       setLoading(true);
       setError('');
       try {
-        const term = encodeURIComponent(activeTab);
+        const term = encodeURIComponent(searchTerms[activeTab] || activeTab);
         const nodeId = browseNodes[activeTab];
         const params = new URLSearchParams({
           api_key: RF_API_KEY,
