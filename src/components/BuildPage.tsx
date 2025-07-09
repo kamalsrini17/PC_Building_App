@@ -70,7 +70,7 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
     setApiError('');
     setUsingRealData(false);
     
-    if (!RAINFOREST_API_KEY) {
+    if (!RAINFOREST_API_KEY || RAINFOREST_API_KEY === 'your_rainforest_api_key_here') {
       setApiError('Rainforest API key not configured. Using mock data.');
       return getMockData(category);
     }
