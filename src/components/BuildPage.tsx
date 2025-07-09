@@ -7,341 +7,143 @@ import {
   Zap,
   Fan,
   ArrowLeft,
-  Save
+  Save,
+  Search,
+  Filter,
+  X
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import SaveBuildModal from './SaveBuildModal';
 
-// Mock data for PC components
-const mockComponents = {
-  cpu: [
-    {
-      id: 'cpu-1',
-      name: 'AMD Ryzen 9 7950X',
-      price: 699.99,
-      image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { cores: 16, threads: 32, baseClock: '4.5 GHz', socket: 'AM5' }
-    },
-    {
-      id: 'cpu-2',
-      name: 'Intel Core i9-13900K',
-      price: 589.99,
-      image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { cores: 24, threads: 32, baseClock: '3.0 GHz', socket: 'LGA1700' }
-    },
-    {
-      id: 'cpu-3',
-      name: 'AMD Ryzen 7 7700X',
-      price: 399.99,
-      image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { cores: 8, threads: 16, baseClock: '4.5 GHz', socket: 'AM5' }
-    },
-    {
-      id: 'cpu-4',
-      name: 'Intel Core i7-13700K',
-      price: 409.99,
-      image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { cores: 16, threads: 24, baseClock: '3.4 GHz', socket: 'LGA1700' }
-    },
-    {
-      id: 'cpu-5',
-      name: 'AMD Ryzen 5 7600X',
-      price: 299.99,
-      image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { cores: 6, threads: 12, baseClock: '4.7 GHz', socket: 'AM5' }
-    },
-    {
-      id: 'cpu-6',
-      name: 'Intel Core i5-13600K',
-      price: 319.99,
-      image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { cores: 14, threads: 20, baseClock: '3.5 GHz', socket: 'LGA1700' }
-    }
-  ],
-  gpu: [
-    {
-      id: 'gpu-1',
-      name: 'NVIDIA RTX 4090',
-      price: 1599.99,
-      image: 'https://images.pexels.com/photos/1029757/pexels-photo-1029757.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { memory: '24GB GDDR6X', coreClock: '2230 MHz', powerConsumption: '450W' }
-    },
-    {
-      id: 'gpu-2',
-      name: 'NVIDIA RTX 4080',
-      price: 1199.99,
-      image: 'https://images.pexels.com/photos/1029757/pexels-photo-1029757.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { memory: '16GB GDDR6X', coreClock: '2205 MHz', powerConsumption: '320W' }
-    },
-    {
-      id: 'gpu-3',
-      name: 'AMD RX 7900 XTX',
-      price: 999.99,
-      image: 'https://images.pexels.com/photos/1029757/pexels-photo-1029757.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { memory: '24GB GDDR6', coreClock: '2300 MHz', powerConsumption: '355W' }
-    },
-    {
-      id: 'gpu-4',
-      name: 'NVIDIA RTX 4070',
-      price: 599.99,
-      image: 'https://images.pexels.com/photos/1029757/pexels-photo-1029757.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { memory: '12GB GDDR6X', coreClock: '1920 MHz', powerConsumption: '200W' }
-    },
-    {
-      id: 'gpu-5',
-      name: 'AMD RX 7800 XT',
-      price: 499.99,
-      image: 'https://images.pexels.com/photos/1029757/pexels-photo-1029757.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { memory: '16GB GDDR6', coreClock: '2124 MHz', powerConsumption: '263W' }
-    },
-    {
-      id: 'gpu-6',
-      name: 'NVIDIA RTX 4060 Ti',
-      price: 399.99,
-      image: 'https://images.pexels.com/photos/1029757/pexels-photo-1029757.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { memory: '8GB GDDR6X', coreClock: '2310 MHz', powerConsumption: '160W' }
-    }
-  ],
-  motherboard: [
-    {
-      id: 'mb-1',
-      name: 'ASUS ROG Strix X670E-E',
-      price: 499.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { socket: 'AM5', chipset: 'X670E', formFactor: 'ATX', memorySlots: 4 }
-    },
-    {
-      id: 'mb-2',
-      name: 'MSI MPG Z790 Carbon',
-      price: 449.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { socket: 'LGA1700', chipset: 'Z790', formFactor: 'ATX', memorySlots: 4 }
-    },
-    {
-      id: 'mb-3',
-      name: 'GIGABYTE B650 AORUS Elite',
-      price: 199.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { socket: 'AM5', chipset: 'B650', formFactor: 'ATX', memorySlots: 4 }
-    },
-    {
-      id: 'mb-4',
-      name: 'ASRock B760M Pro RS',
-      price: 129.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { socket: 'LGA1700', chipset: 'B760', formFactor: 'Micro-ATX', memorySlots: 4 }
-    }
-  ],
-  ram: [
-    {
-      id: 'ram-1',
-      name: 'Corsair Vengeance DDR5-5600 32GB',
-      price: 179.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { capacity: '32GB', speed: 'DDR5-5600', modules: '2x16GB', latency: 'CL36' }
-    },
-    {
-      id: 'ram-2',
-      name: 'G.Skill Trident Z5 DDR5-6000 16GB',
-      price: 129.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { capacity: '16GB', speed: 'DDR5-6000', modules: '2x8GB', latency: 'CL30' }
-    },
-    {
-      id: 'ram-3',
-      name: 'Kingston Fury Beast DDR4-3200 32GB',
-      price: 99.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { capacity: '32GB', speed: 'DDR4-3200', modules: '2x16GB', latency: 'CL16' }
-    }
-  ],
-  pcstorage: [
-    {
-      id: 'storage-1',
-      name: 'Samsung 980 PRO 2TB NVMe SSD',
-      price: 199.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { capacity: '2TB', type: 'NVMe SSD', interface: 'PCIe 4.0', speed: '7000 MB/s' }
-    },
-    {
-      id: 'storage-2',
-      name: 'WD Black SN850X 1TB NVMe SSD',
-      price: 129.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { capacity: '1TB', type: 'NVMe SSD', interface: 'PCIe 4.0', speed: '7300 MB/s' }
-    },
-    {
-      id: 'storage-3',
-      name: 'Seagate Barracuda 4TB HDD',
-      price: 89.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { capacity: '4TB', type: 'HDD', interface: 'SATA III', speed: '5400 RPM' }
-    }
-  ],
-  psu: [
-    {
-      id: 'psu-1',
-      name: 'Corsair RM850x 850W 80+ Gold',
-      price: 149.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { wattage: '850W', efficiency: '80+ Gold', modular: 'Fully Modular', warranty: '10 Years' }
-    },
-    {
-      id: 'psu-2',
-      name: 'EVGA SuperNOVA 750W 80+ Platinum',
-      price: 129.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { wattage: '750W', efficiency: '80+ Platinum', modular: 'Fully Modular', warranty: '10 Years' }
-    },
-    {
-      id: 'psu-3',
-      name: 'Seasonic Focus GX-650 650W 80+ Gold',
-      price: 99.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { wattage: '650W', efficiency: '80+ Gold', modular: 'Fully Modular', warranty: '10 Years' }
-    }
-  ],
-  cpucooler: [
-    {
-      id: 'cooler-1',
-      name: 'Noctua NH-D15 Air Cooler',
-      price: 99.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { type: 'Air Cooler', height: '165mm', fans: '2x140mm', tdp: '250W' }
-    },
-    {
-      id: 'cooler-2',
-      name: 'Corsair H100i RGB Elite 240mm AIO',
-      price: 149.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { type: 'AIO Liquid', radiator: '240mm', fans: '2x120mm', tdp: '300W' }
-    },
-    {
-      id: 'cooler-3',
-      name: 'be quiet! Dark Rock Pro 4',
-      price: 89.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { type: 'Air Cooler', height: '163mm', fans: '2x120mm', tdp: '250W' }
-    }
-  ],
-  casefans: [
-    {
-      id: 'fan-1',
-      name: 'Noctua NF-A12x25 120mm Fan',
-      price: 29.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { size: '120mm', speed: '2000 RPM', airflow: '60.1 CFM', noise: '22.6 dBA' }
-    },
-    {
-      id: 'fan-2',
-      name: 'Corsair LL120 RGB 3-Pack',
-      price: 99.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { size: '120mm', speed: '1500 RPM', airflow: '43.25 CFM', features: 'RGB Lighting' }
-    },
-    {
-      id: 'fan-3',
-      name: 'be quiet! Silent Wings 3 140mm',
-      price: 24.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { size: '140mm', speed: '1000 RPM', airflow: '59.5 CFM', noise: '15.5 dBA' }
-    }
-  ],
-  pccase: [
-    {
-      id: 'case-1',
-      name: 'Fractal Design Define 7 ATX',
-      price: 169.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { formFactor: 'ATX', material: 'Steel', dimensions: '240x547x465mm', weight: '12.8kg' }
-    },
-    {
-      id: 'case-2',
-      name: 'NZXT H7 Flow Mid-Tower',
-      price: 129.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { formFactor: 'ATX', material: 'Steel/Glass', dimensions: '230x494x460mm', weight: '8.2kg' }
-    },
-    {
-      id: 'case-3',
-      name: 'Corsair 4000D Airflow',
-      price: 104.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { formFactor: 'ATX', material: 'Steel/Glass', dimensions: '230x466x453mm', weight: '7.2kg' }
-    }
-  ],
-  pcaccessories: [
-    {
-      id: 'acc-1',
-      name: 'Cable Management Kit',
-      price: 19.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { includes: 'Cable ties, velcro straps, clips', material: 'Nylon', quantity: '50 pieces' }
-    },
-    {
-      id: 'acc-2',
-      name: 'Thermal Paste Arctic MX-4',
-      price: 9.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { volume: '4g', conductivity: '8.5 W/mK', temperature: '-40°C to 180°C' }
-    },
-    {
-      id: 'acc-3',
-      name: 'Anti-Static Wrist Strap',
-      price: 7.99,
-      image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
-      specs: { length: '6ft', resistance: '1 megohm', connector: 'Alligator clip' }
-    }
-  ]
-};
-
 // Component categories configuration
 const componentCategories = [
-  { key: 'cpu', name: 'CPU', icon: Cpu },
-  { key: 'gpu', name: 'GPU', icon: Monitor },
-  { key: 'motherboard', name: 'Motherboard', icon: HardDrive },
-  { key: 'ram', name: 'Memory', icon: Usb },
-  { key: 'pcstorage', name: 'Storage', icon: HardDrive },
-  { key: 'psu', name: 'Power Supply', icon: Zap },
-  { key: 'cpucooler', name: 'CPU Cooler', icon: Fan },
-  { key: 'casefans', name: 'Case Fans', icon: Fan },
-  { key: 'pccase', name: 'PC Case', icon: Monitor },
-  { key: 'pcaccessories', name: 'Accessories', icon: Usb }
+  { key: 'cpu', name: 'CPU', icon: Cpu, searchTerms: ['processor', 'CPU', 'AMD Ryzen', 'Intel Core'] },
+  { key: 'gpu', name: 'GPU', icon: Monitor, searchTerms: ['graphics card', 'GPU', 'NVIDIA', 'AMD Radeon', 'RTX', 'GTX'] },
+  { key: 'motherboard', name: 'Motherboard', icon: HardDrive, searchTerms: ['motherboard', 'mainboard', 'ASUS', 'MSI', 'GIGABYTE'] },
+  { key: 'ram', name: 'Memory', icon: Usb, searchTerms: ['RAM', 'memory', 'DDR4', 'DDR5', 'Corsair', 'G.Skill'] },
+  { key: 'storage', name: 'Storage', icon: HardDrive, searchTerms: ['SSD', 'HDD', 'storage', 'Samsung', 'WD', 'NVMe'] },
+  { key: 'psu', name: 'Power Supply', icon: Zap, searchTerms: ['power supply', 'PSU', 'Corsair', 'EVGA', 'Seasonic'] },
+  { key: 'cooler', name: 'CPU Cooler', icon: Fan, searchTerms: ['CPU cooler', 'cooler', 'Noctua', 'Corsair', 'be quiet'] },
+  { key: 'case', name: 'PC Case', icon: Monitor, searchTerms: ['PC case', 'computer case', 'tower', 'Fractal', 'NZXT'] },
+  { key: 'fans', name: 'Case Fans', icon: Fan, searchTerms: ['case fan', 'cooling fan', 'RGB fan', 'Noctua', 'Corsair'] },
+  { key: 'accessories', name: 'Accessories', icon: Usb, searchTerms: ['cable', 'thermal paste', 'tools', 'accessories'] }
 ];
 
 interface BuildPageProps {
   onBackToHome: () => void;
 }
 
+interface Product {
+  asin: string;
+  title: string;
+  price?: {
+    value: number;
+    currency: string;
+  };
+  image: string;
+  rating?: number;
+  ratings_total?: number;
+  link: string;
+}
+
 export default function BuildPage({ onBackToHome }: BuildPageProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('cpu');
-  const [items, setItems] = useState<any[]>([]);
-  const [build, setBuild] = useState<Record<string, any>>({});
+  const [items, setItems] = useState<Product[]>([]);
+  const [build, setBuild] = useState<Record<string, Product>>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [showSaveModal, setShowSaveModal] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [priceFilter, setPriceFilter] = useState<{ min: number; max: number }>({ min: 0, max: 10000 });
+  const [showFilters, setShowFilters] = useState<boolean>(false);
 
-  // Load mock data when tab changes
-  useEffect(() => {
+  // Rainforest API configuration
+  const RAINFOREST_API_KEY = import.meta.env.VITE_RAINFOREST_API_KEY;
+  const RAINFOREST_API_URL = 'https://api.rainforestapi.com/request';
+
+  // Search products using Rainforest API
+  const searchProducts = async (category: string, query: string = '') => {
+    if (!RAINFOREST_API_KEY) {
+      console.error('Rainforest API key not found');
+      return [];
+    }
+
     setLoading(true);
-    // Simulate API delay
-    setTimeout(() => {
-      setItems(mockComponents[activeTab as keyof typeof mockComponents] || []);
+    try {
+      const categoryInfo = componentCategories.find(cat => cat.key === category);
+      const searchTerms = categoryInfo?.searchTerms || [category];
+      const searchTerm = query || searchTerms[0];
+
+      const params = new URLSearchParams({
+        api_key: RAINFOREST_API_KEY,
+        type: 'search',
+        amazon_domain: 'amazon.com',
+        search_term: searchTerm,
+        sort_by: 'relevance',
+        max_page: '1'
+      });
+
+      const response = await fetch(`${RAINFOREST_API_URL}?${params}`);
+      const data = await response.json();
+
+      if (data.search_results) {
+        return data.search_results.map((product: any) => ({
+          asin: product.asin,
+          title: product.title,
+          price: product.price,
+          image: product.image,
+          rating: product.rating,
+          ratings_total: product.ratings_total,
+          link: product.link
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      return [];
+    } finally {
       setLoading(false);
-    }, 300);
+    }
+  };
+
+  // Load products when tab changes
+  useEffect(() => {
+    searchProducts(activeTab).then(setItems);
   }, [activeTab]);
 
+  // Filter products based on search and price
+  const filteredItems = items.filter(item => {
+    const matchesSearch = !searchQuery || 
+      item.title.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const price = item.price?.value || 0;
+    const matchesPrice = price >= priceFilter.min && price <= priceFilter.max;
+    
+    return matchesSearch && matchesPrice;
+  });
+
   // Handle component selection
-  const handleSelect = (item: any) => {
+  const handleSelect = (item: Product) => {
     setBuild(prev => ({ ...prev, [activeTab]: item }));
+  };
+
+  // Handle search
+  const handleSearch = async () => {
+    if (searchQuery.trim()) {
+      const results = await searchProducts(activeTab, searchQuery);
+      setItems(results);
+    } else {
+      const results = await searchProducts(activeTab);
+      setItems(results);
+    }
   };
 
   // Calculate total price
   const getTotalPrice = () => {
-    return Object.values(build).reduce((sum, component: any) => {
-      return sum + (component?.price || 0);
+    return Object.values(build).reduce((sum, component) => {
+      return sum + (component?.price?.value || 0);
     }, 0);
   };
 
@@ -435,19 +237,111 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           })}
         </div>
 
+        {/* Search and Filters */}
+        <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 p-6 mb-8">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search Bar */}
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-colors"
+                  placeholder={`Search ${componentCategories.find(c => c.key === activeTab)?.name || 'components'}...`}
+                />
+              </div>
+            </div>
+
+            {/* Search Button */}
+            <button
+              onClick={handleSearch}
+              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center space-x-2"
+            >
+              <Search className="h-5 w-5" />
+              <span>Search</span>
+            </button>
+
+            {/* Filter Toggle */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="bg-gray-700/50 hover:bg-gray-600/50 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center space-x-2"
+            >
+              <Filter className="h-5 w-5" />
+              <span>Filters</span>
+            </button>
+          </div>
+
+          {/* Filters Panel */}
+          {showFilters && (
+            <div className="mt-6 pt-6 border-t border-gray-600/50">
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Price Range */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                    Price Range
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        value={priceFilter.min}
+                        onChange={(e) => setPriceFilter(prev => ({ ...prev, min: Number(e.target.value) }))}
+                        className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-red-500/50"
+                        placeholder="Min"
+                        min="0"
+                      />
+                    </div>
+                    <span className="text-gray-400">to</span>
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        value={priceFilter.max}
+                        onChange={(e) => setPriceFilter(prev => ({ ...prev, max: Number(e.target.value) }))}
+                        className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-red-500/50"
+                        placeholder="Max"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Clear Filters */}
+                <div className="flex items-end">
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setPriceFilter({ min: 0, max: 10000 });
+                      searchProducts(activeTab).then(setItems);
+                    }}
+                    className="bg-gray-600/50 hover:bg-gray-500/50 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center space-x-2"
+                  >
+                    <X className="h-4 w-4" />
+                    <span>Clear Filters</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Selected Components Summary */}
         {Object.keys(build).length > 0 && (
           <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 p-6 mb-8">
             <h3 className="text-lg font-semibold text-white mb-4">Selected Components</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.entries(build).map(([category, component]: [string, any]) => {
+              {Object.entries(build).map(([category, component]) => {
                 const categoryInfo = componentCategories.find(cat => cat.key === category);
                 return (
                   <div key={category} className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
                     {categoryInfo && <categoryInfo.icon className="h-5 w-5 text-red-400" />}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{component.name}</p>
-                      <p className="text-sm text-green-400">${component.price.toFixed(2)}</p>
+                      <p className="text-sm font-medium text-white truncate">{component.title}</p>
+                      <p className="text-sm text-green-400">
+                        ${component.price?.value?.toFixed(2) || '0.00'}
+                      </p>
                     </div>
                   </div>
                 );
@@ -466,45 +360,60 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {items.map(item => (
+            {filteredItems.map(item => (
               <div
-                key={item.id}
+                key={item.asin}
                 onClick={() => handleSelect(item)}
                 className={`bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden cursor-pointer transition-all duration-300 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/10 group ${
-                  build[activeTab]?.id === item.id ? 'ring-2 ring-red-500 border-red-500' : ''
+                  build[activeTab]?.asin === item.asin ? 'ring-2 ring-red-500 border-red-500' : ''
                 }`}
               >
                 {/* Product Image */}
                 <div className="aspect-square overflow-hidden bg-gray-700/30">
                   <img
                     src={item.image}
-                    alt={item.name}
+                    alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400';
+                    }}
                   />
                 </div>
                 
                 {/* Product Info */}
                 <div className="p-4">
-                  <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-red-300 transition-colors">
-                    {item.name}
+                  <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-red-300 transition-colors text-sm">
+                    {item.title}
                   </h3>
                   
-                  {/* Specs */}
-                  <div className="space-y-1 mb-3">
-                    {Object.entries(item.specs).slice(0, 2).map(([key, value]) => (
-                      <div key={key} className="flex justify-between text-xs">
-                        <span className="text-gray-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
-                        <span className="text-gray-300">{value}</span>
+                  {/* Rating */}
+                  {item.rating && (
+                    <div className="flex items-center space-x-1 mb-2">
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <div
+                            key={i}
+                            className={`w-3 h-3 ${
+                              i < Math.floor(item.rating || 0) ? 'text-yellow-400' : 'text-gray-600'
+                            }`}
+                          >
+                            ★
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                      <span className="text-xs text-gray-400">
+                        ({item.ratings_total || 0})
+                      </span>
+                    </div>
+                  )}
                   
                   {/* Price */}
                   <div className="flex items-center justify-between">
                     <p className="text-lg font-bold text-green-400">
-                      ${item.price.toFixed(2)}
+                      ${item.price?.value?.toFixed(2) || 'N/A'}
                     </p>
-                    {build[activeTab]?.id === item.id && (
+                    {build[activeTab]?.asin === item.asin && (
                       <div className="flex items-center space-x-1 text-green-400 text-sm">
                         <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                         <span>Selected</span>
@@ -514,6 +423,29 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* No Results */}
+        {!loading && filteredItems.length === 0 && (
+          <div className="text-center py-16">
+            <div className="flex items-center justify-center w-24 h-24 bg-gray-800/50 rounded-full mb-6 mx-auto">
+              <Search className="h-12 w-12 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">No Products Found</h3>
+            <p className="text-gray-400 mb-6">
+              Try adjusting your search terms or filters to find more products.
+            </p>
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setPriceFilter({ min: 0, max: 10000 });
+                searchProducts(activeTab).then(setItems);
+              }}
+              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300"
+            >
+              Clear Search
+            </button>
           </div>
         )}
       </div>
