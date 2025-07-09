@@ -62,12 +62,15 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
   // Rainforest API configuration
   const RAINFOREST_API_KEY = import.meta.env.VITE_RAINFOREST_API_KEY;
   const RAINFOREST_API_URL = 'https://api.rainforestapi.com/request';
+  const [apiError, setApiError] = useState<string>('');
 
   // Search products using Rainforest API
   const searchProducts = async (category: string, query: string = '') => {
+    setApiError('');
+    
     if (!RAINFOREST_API_KEY) {
-      console.error('Rainforest API key not found');
-      return [];
+      setApiError('Rainforest API key not configured. Using mock data.');
+      return getMockData(category);
     }
 
     setLoading(true);
@@ -82,13 +85,19 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
         amazon_domain: 'amazon.com',
         search_term: searchTerm,
         sort_by: 'relevance',
-        max_page: '1'
+        max_page: '1',
+        max_results: '20'
       });
 
       const response = await fetch(`${RAINFOREST_API_URL}?${params}`);
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+      
       const data = await response.json();
 
-      if (data.search_results) {
+      if (data.search_results && data.search_results.length > 0) {
         return data.search_results.map((product: any) => ({
           asin: product.asin,
           title: product.title,
@@ -98,16 +107,163 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           ratings_total: product.ratings_total,
           link: product.link
         }));
+      } else {
+        setApiError('No products found from API. Using mock data.');
+        return getMockData(category);
       }
-      return [];
     } catch (error) {
       console.error('Error fetching products:', error);
-      return [];
+      setApiError(`API Error: ${error instanceof Error ? error.message : 'Unknown error'}. Using mock data.`);
+      return getMockData(category);
     } finally {
       setLoading(false);
     }
   };
 
+  // Mock data fallback
+  const getMockData = (category: string): Product[] => {
+    const mockProducts: Record<string, Product[]> = {
+      cpu: [
+        {
+          asin: 'cpu-1',
+          title: 'AMD Ryzen 9 7950X 16-Core, 32-Thread Unlocked Desktop Processor',
+          price: { value: 699.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.5,
+          ratings_total: 1250,
+          link: '#'
+        },
+        {
+          asin: 'cpu-2',
+          title: 'Intel Core i9-13900K Gaming Desktop Processor 24 cores',
+          price: { value: 589.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.4,
+          ratings_total: 890,
+          link: '#'
+        },
+        {
+          asin: 'cpu-3',
+          title: 'AMD Ryzen 7 7700X 8-Core, 16-Thread Unlocked Desktop Processor',
+          price: { value: 399.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.6,
+          ratings_total: 756,
+          link: '#'
+        }
+      ],
+      gpu: [
+        {
+          asin: 'gpu-1',
+          title: 'NVIDIA GeForce RTX 4090 24GB GDDR6X Graphics Card',
+          price: { value: 1599.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/1029757/pexels-photo-1029757.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.7,
+          ratings_total: 432,
+          link: '#'
+        },
+        {
+          asin: 'gpu-2',
+          title: 'NVIDIA GeForce RTX 4080 16GB GDDR6X Graphics Card',
+          price: { value: 1199.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/1029757/pexels-photo-1029757.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.5,
+          ratings_total: 298,
+          link: '#'
+        }
+      ],
+      motherboard: [
+        {
+          asin: 'mb-1',
+          title: 'ASUS ROG Strix X670E-E Gaming WiFi AMD AM5 ATX Motherboard',
+          price: { value: 499.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.3,
+          ratings_total: 167,
+          link: '#'
+        }
+      ],
+      ram: [
+        {
+          asin: 'ram-1',
+          title: 'Corsair Vengeance LPX 32GB (2x16GB) DDR4 3200MHz C16',
+          price: { value: 179.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.6,
+          ratings_total: 2341,
+          link: '#'
+        }
+      ],
+      storage: [
+        {
+          asin: 'storage-1',
+          title: 'Samsung 980 PRO 2TB PCIe 4.0 NVMe M.2 Internal SSD',
+          price: { value: 199.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.7,
+          ratings_total: 1876,
+          link: '#'
+        }
+      ],
+      psu: [
+        {
+          asin: 'psu-1',
+          title: 'Corsair RM850x 850W 80 PLUS Gold Fully Modular ATX Power Supply',
+          price: { value: 149.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.8,
+          ratings_total: 934,
+          link: '#'
+        }
+      ],
+      cooler: [
+        {
+          asin: 'cooler-1',
+          title: 'Noctua NH-D15 Premium CPU Cooler with Dual NF-A15 140mm Fans',
+          price: { value: 99.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.9,
+          ratings_total: 567,
+          link: '#'
+        }
+      ],
+      case: [
+        {
+          asin: 'case-1',
+          title: 'Fractal Design Define 7 ATX Mid Tower Computer Case',
+          price: { value: 169.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.4,
+          ratings_total: 234,
+          link: '#'
+        }
+      ],
+      fans: [
+        {
+          asin: 'fan-1',
+          title: 'Noctua NF-A12x25 PWM Premium Quiet Fan 120mm',
+          price: { value: 29.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.8,
+          ratings_total: 1456,
+          link: '#'
+        }
+      ],
+      accessories: [
+        {
+          asin: 'acc-1',
+          title: 'Cable Management Kit with Velcro Straps and Zip Ties',
+          price: { value: 19.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.2,
+          ratings_total: 789,
+          link: '#'
+        }
+      ]
+    };
+
+    return mockProducts[category] || [];
+  };
   // Load products when tab changes
   useEffect(() => {
     searchProducts(activeTab).then(setItems);
@@ -239,6 +395,14 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
 
         {/* Search and Filters */}
         <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 p-6 mb-8">
+          {/* API Status */}
+          {apiError && (
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-4 flex items-center space-x-2">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0"></div>
+              <p className="text-yellow-400 text-sm">{apiError}</p>
+            </div>
+          )}
+          
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search Bar */}
             <div className="flex-1">
@@ -434,7 +598,7 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">No Products Found</h3>
             <p className="text-gray-400 mb-6">
-              Try adjusting your search terms or filters to find more products.
+              {apiError ? 'API is not available. Please check your configuration.' : 'Try adjusting your search terms or filters to find more products.'}
             </p>
             <button
               onClick={() => {
@@ -444,7 +608,7 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
               }}
               className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300"
             >
-              Clear Search
+              {apiError ? 'Retry' : 'Clear Search'}
             </button>
           </div>
         )}
