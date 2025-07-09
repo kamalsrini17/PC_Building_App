@@ -45,6 +45,102 @@ const searchTerms: Record<string, string> = {
   pcaccessories: 'PC accessories computer'
 };
 
+// ─── Client-side filtering function ───
+const filterProducts = (category: string, items: any[]): any[] => {
+  if (!items || items.length === 0) return items;
+
+  return items.filter(item => {
+    const title = (item.title || '').toLowerCase();
+    const description = (item.description || '').toLowerCase();
+    const text = `${title} ${description}`;
+
+    switch (category) {
+      case 'cpu':
+        return (
+          (text.includes('processor') || text.includes('cpu') || text.includes('ryzen') || 
+           text.includes('intel') || text.includes('core i') || text.includes('amd')) &&
+          !text.includes('cooler') && !text.includes('motherboard') && !text.includes('socket')
+        );
+
+      case 'gpu':
+        return (
+          (text.includes('graphics') || text.includes('gpu') || text.includes('video card') ||
+           text.includes('geforce') || text.includes('radeon') || text.includes('rtx') ||
+           text.includes('gtx') || text.includes('rx ')) &&
+          !text.includes('cable') && !text.includes('bracket') && !text.includes('riser')
+        );
+
+      case 'motherboard':
+        return (
+          (text.includes('motherboard') || text.includes('mainboard') || text.includes('mobo')) &&
+          !text.includes('standoff') && !text.includes('screw') && !text.includes('cable')
+        );
+
+      case 'ram':
+        return (
+          (text.includes('memory') || text.includes('ram') || text.includes('ddr4') || 
+           text.includes('ddr5') || text.includes('dimm')) &&
+          !text.includes('card reader') && !text.includes('usb') && !text.includes('storage') &&
+          !text.includes('hard drive') && !text.includes('ssd')
+        );
+
+      case 'pcstorage':
+        return (
+          (text.includes('ssd') || text.includes('hard drive') || text.includes('hdd') ||
+           text.includes('nvme') || text.includes('storage') || text.includes('drive')) &&
+          !text.includes('enclosure') && !text.includes('cable') && !text.includes('adapter') &&
+          !text.includes('optical') && !text.includes('dvd') && !text.includes('cd')
+        );
+
+      case 'psu':
+        return (
+          (text.includes('power supply') || text.includes('psu') || text.includes('watt') ||
+           text.includes('modular') || text.includes('80 plus')) &&
+          !text.includes('cable') && !text.includes('extension') && !text.includes('adapter') &&
+          !text.includes('ups') && !text.includes('surge')
+        );
+
+      case 'cpucooler':
+        return (
+          (text.includes('cpu cooler') || text.includes('processor cooler') || 
+           text.includes('heatsink') || text.includes('liquid cooling') || text.includes('aio')) &&
+          !text.includes('case fan') && !text.includes('thermal paste') && !text.includes('mount')
+        );
+
+      case 'casefans':
+        return (
+          (text.includes('case fan') || text.includes('pc fan') || text.includes('cooling fan') ||
+           text.includes('exhaust fan') || text.includes('intake fan')) &&
+          !text.includes('cpu') && !text.includes('gpu') && !text.includes('power supply') &&
+          !text.includes('laptop')
+        );
+
+      case 'pccase':
+        return (
+          (text.includes('pc case') || text.includes('computer case') || text.includes('tower') ||
+           text.includes('chassis') || text.includes('enclosure')) &&
+          !text.includes('hard drive') && !text.includes('phone') && !text.includes('laptop') &&
+          !text.includes('tablet') && !text.includes('external')
+        );
+
+      case 'pcaccessories':
+        // For accessories, we want to exclude main components
+        return (
+          !text.includes('processor') && !text.includes('cpu') && !text.includes('graphics card') &&
+          !text.includes('motherboard') && !text.includes('power supply') && !text.includes('ram') &&
+          !text.includes('hard drive') && !text.includes('ssd') && !text.includes('case fan') &&
+          (text.includes('cable') || text.includes('adapter') || text.includes('bracket') ||
+           text.includes('screw') || text.includes('thermal paste') || text.includes('led') ||
+           text.includes('rgb') || text.includes('wifi') || text.includes('bluetooth') ||
+           text.includes('usb') || text.includes('hub') || text.includes('mount'))
+        );
+
+      default:
+        return true;
+    }
+  });
+};
+
 // ─── Tabs ───
 const componentCategories = [
   { key: 'cpu', name: 'CPU', icon: Cpu },
@@ -105,7 +201,9 @@ export default function BuildPage() {
         const json = await res.json();
         console.log('Search response:', json);
 
-        setItems(json.search_results || []);
+        const rawItems = json.search_results || [];
+        const filteredItems = filterProducts(activeTab, rawItems);
+        setItems(filteredItems);
         const total = json.pagination?.total_pages || 1;
         setTotalPages(Math.min(total, 10));
       } catch (err) {
