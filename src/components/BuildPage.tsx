@@ -18,16 +18,16 @@ import SaveBuildModal from './SaveBuildModal';
 
 // Component categories configuration
 const componentCategories = [
-  { key: 'cpu', name: 'CPU', icon: Cpu, searchTerms: ['processor', 'CPU', 'AMD Ryzen', 'Intel Core'] },
-  { key: 'gpu', name: 'GPU', icon: Monitor, searchTerms: ['graphics card', 'GPU', 'NVIDIA', 'AMD Radeon', 'RTX', 'GTX'] },
-  { key: 'motherboard', name: 'Motherboard', icon: HardDrive, searchTerms: ['motherboard', 'mainboard', 'ASUS', 'MSI', 'GIGABYTE'] },
-  { key: 'ram', name: 'Memory', icon: Usb, searchTerms: ['RAM', 'memory', 'DDR4', 'DDR5', 'Corsair', 'G.Skill'] },
-  { key: 'storage', name: 'Storage', icon: HardDrive, searchTerms: ['SSD', 'HDD', 'storage', 'Samsung', 'WD', 'NVMe'] },
-  { key: 'psu', name: 'Power Supply', icon: Zap, searchTerms: ['power supply', 'PSU', 'Corsair', 'EVGA', 'Seasonic'] },
-  { key: 'cooler', name: 'CPU Cooler', icon: Fan, searchTerms: ['CPU cooler', 'cooler', 'Noctua', 'Corsair', 'be quiet'] },
-  { key: 'case', name: 'PC Case', icon: Monitor, searchTerms: ['PC case', 'computer case', 'tower', 'Fractal', 'NZXT'] },
-  { key: 'fans', name: 'Case Fans', icon: Fan, searchTerms: ['case fan', 'cooling fan', 'RGB fan', 'Noctua', 'Corsair'] },
-  { key: 'accessories', name: 'Accessories', icon: Usb, searchTerms: ['cable', 'thermal paste', 'tools', 'accessories'] }
+  { key: 'cpu', name: 'CPU', icon: Cpu, searchTerms: ['AMD Ryzen 7 7700X processor', 'Intel Core i7 13700K processor', 'desktop processor CPU'] },
+  { key: 'gpu', name: 'GPU', icon: Monitor, searchTerms: ['NVIDIA RTX 4070 graphics card', 'AMD RX 7800 XT graphics card', 'gaming graphics card'] },
+  { key: 'motherboard', name: 'Motherboard', icon: HardDrive, searchTerms: ['ASUS ROG motherboard ATX', 'MSI gaming motherboard', 'AMD AM5 motherboard'] },
+  { key: 'ram', name: 'Memory', icon: Usb, searchTerms: ['Corsair Vengeance DDR5 32GB', 'G.Skill Trident Z5 DDR5', 'desktop memory RAM'] },
+  { key: 'storage', name: 'Storage', icon: HardDrive, searchTerms: ['Samsung 980 PRO NVMe SSD', 'WD Black SN850X SSD', 'M.2 NVMe SSD 1TB'] },
+  { key: 'psu', name: 'Power Supply', icon: Zap, searchTerms: ['Corsair RM850x power supply', 'EVGA SuperNOVA 750W PSU', 'modular power supply 80+ Gold'] },
+  { key: 'cooler', name: 'CPU Cooler', icon: Fan, searchTerms: ['Noctua NH-D15 CPU cooler', 'Corsair H100i AIO cooler', 'CPU air cooler tower'] },
+  { key: 'case', name: 'PC Case', icon: Monitor, searchTerms: ['Fractal Design Define 7 case', 'NZXT H7 Flow case', 'ATX mid tower case'] },
+  { key: 'fans', name: 'Case Fans', icon: Fan, searchTerms: ['Noctua NF-A12x25 120mm fan', 'Corsair LL120 RGB fan', 'PC case cooling fan'] },
+  { key: 'accessories', name: 'Accessories', icon: Usb, searchTerms: ['PC cable management kit', 'Arctic MX-4 thermal paste', 'computer building tools'] }
 ];
 
 interface BuildPageProps {
@@ -63,10 +63,12 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
   const RAINFOREST_API_KEY = import.meta.env.VITE_RAINFOREST_API_KEY;
   const RAINFOREST_API_URL = 'https://api.rainforestapi.com/request';
   const [apiError, setApiError] = useState<string>('');
+  const [usingRealData, setUsingRealData] = useState<boolean>(false);
 
   // Search products using Rainforest API
   const searchProducts = async (category: string, query: string = '') => {
     setApiError('');
+    setUsingRealData(false);
     
     if (!RAINFOREST_API_KEY) {
       setApiError('Rainforest API key not configured. Using mock data.');
@@ -84,11 +86,12 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
         type: 'search',
         amazon_domain: 'amazon.com',
         search_term: searchTerm,
-        sort_by: 'relevance',
+        sort_by: 'featured',
         max_page: '1',
-        max_results: '20'
+        max_results: '16'
       });
 
+      console.log('Making API request with params:', Object.fromEntries(params));
       const response = await fetch(`${RAINFOREST_API_URL}?${params}`);
       
       if (!response.ok) {
@@ -96,8 +99,10 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
       }
       
       const data = await response.json();
+      console.log('API Response:', data);
 
       if (data.search_results && data.search_results.length > 0) {
+        setUsingRealData(true);
         return data.search_results.map((product: any) => ({
           asin: product.asin,
           title: product.title,
@@ -108,7 +113,7 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           link: product.link
         }));
       } else {
-        setApiError('No products found from API. Using mock data.');
+        setApiError(`No products found for "${searchTerm}". Using mock data.`);
         return getMockData(category);
       }
     } catch (error) {
@@ -396,12 +401,24 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
         {/* Search and Filters */}
         <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 p-6 mb-8">
           {/* API Status */}
-          {apiError && (
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-4 flex items-center space-x-2">
-              <div className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0"></div>
-              <p className="text-yellow-400 text-sm">{apiError}</p>
-            </div>
-          )}
+          <div className="mb-4">
+            {usingRealData ? (
+              <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0 animate-pulse"></div>
+                <p className="text-green-400 text-sm">✓ Using live Amazon product data</p>
+              </div>
+            ) : apiError ? (
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 flex items-center space-x-2">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0"></div>
+                <p className="text-yellow-400 text-sm">{apiError}</p>
+              </div>
+            ) : (
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></div>
+                <p className="text-blue-400 text-sm">Ready to search Amazon products</p>
+              </div>
+            )}
+          </div>
           
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search Bar */}
