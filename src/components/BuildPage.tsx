@@ -95,7 +95,10 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
       const response = await fetch(`${RAINFOREST_API_URL}?${params}`);
       
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        const errorMessage = `API request failed: ${response.status} ${response.statusText}`;
+        console.error('API Error:', errorMessage);
+        setApiError(errorMessage + '. Using mock data.');
+        return getMockData(category);
       }
       
       const data = await response.json();
@@ -118,7 +121,8 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
       }
     } catch (error) {
       console.error('Error fetching products:', error);
-      setApiError(`API Error: ${error instanceof Error ? error.message : 'Unknown error'}. Using mock data.`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setApiError(`API Error: ${errorMessage}. Using mock data.`);
       return getMockData(category);
     } finally {
       setLoading(false);
