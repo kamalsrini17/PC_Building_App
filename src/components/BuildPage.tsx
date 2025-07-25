@@ -45,6 +45,27 @@ interface Product {
   rating?: number;
   ratings_total?: number;
   link: string;
+  // Technical specifications for compatibility checking
+  socket?: string;
+  ramType?: string;
+  pcieVersion?: string;
+  estimatedWattage?: number;
+  wattage?: number; // For PSU
+  formFactor?: string;
+  ramSlots?: number;
+  maxRamCapacity?: number;
+  chipset?: string;
+  coolerHeight?: number; // in mm
+  gpuLength?: number; // in mm
+  caseMaxGpuLength?: number; // in mm
+  caseMaxCoolerHeight?: number; // in mm
+}
+
+interface CompatibilityIssue {
+  component1Key: string;
+  component2Key: string;
+  message: string;
+  severity: 'error' | 'warning';
 }
 
 export default function BuildPage({ onBackToHome }: BuildPageProps) {
@@ -58,6 +79,7 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [priceFilter, setPriceFilter] = useState<{ min: number; max: number }>({ min: 0, max: 10000 });
   const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [compatibilityIssues, setCompatibilityIssues] = useState<CompatibilityIssue[]>([]);
 
   // Rainforest API configuration
   const RAINFOREST_API_KEY = import.meta.env.VITE_RAINFOREST_API_KEY;
@@ -140,7 +162,10 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.5,
           ratings_total: 1250,
-          link: '#'
+          link: '#',
+          socket: 'AM5',
+          estimatedWattage: 170,
+          chipset: 'X670E'
         },
         {
           asin: 'cpu-2',
@@ -149,7 +174,10 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.4,
           ratings_total: 890,
-          link: '#'
+          link: '#',
+          socket: 'LGA1700',
+          estimatedWattage: 125,
+          chipset: 'Z790'
         },
         {
           asin: 'cpu-3',
@@ -158,7 +186,10 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.6,
           ratings_total: 756,
-          link: '#'
+          link: '#',
+          socket: 'AM5',
+          estimatedWattage: 105,
+          chipset: 'X670E'
         }
       ],
       gpu: [
@@ -169,7 +200,10 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/1029757/pexels-photo-1029757.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.7,
           ratings_total: 432,
-          link: '#'
+          link: '#',
+          pcieVersion: 'PCIe 4.0',
+          estimatedWattage: 450,
+          gpuLength: 336
         },
         {
           asin: 'gpu-2',
@@ -178,7 +212,10 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/1029757/pexels-photo-1029757.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.5,
           ratings_total: 298,
-          link: '#'
+          link: '#',
+          pcieVersion: 'PCIe 4.0',
+          estimatedWattage: 320,
+          gpuLength: 310
         }
       ],
       motherboard: [
@@ -189,7 +226,32 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.3,
           ratings_total: 167,
-          link: '#'
+          link: '#',
+          socket: 'AM5',
+          ramType: 'DDR5',
+          pcieVersion: 'PCIe 5.0',
+          formFactor: 'ATX',
+          ramSlots: 4,
+          maxRamCapacity: 128,
+          chipset: 'X670E',
+          estimatedWattage: 25
+        },
+        {
+          asin: 'mb-2',
+          title: 'MSI MAG Z790 TOMAHAWK WiFi Intel LGA1700 ATX Motherboard',
+          price: { value: 279.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.4,
+          ratings_total: 234,
+          link: '#',
+          socket: 'LGA1700',
+          ramType: 'DDR5',
+          pcieVersion: 'PCIe 5.0',
+          formFactor: 'ATX',
+          ramSlots: 4,
+          maxRamCapacity: 128,
+          chipset: 'Z790',
+          estimatedWattage: 25
         }
       ],
       ram: [
@@ -200,7 +262,20 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.6,
           ratings_total: 2341,
-          link: '#'
+          link: '#',
+          ramType: 'DDR4',
+          estimatedWattage: 10
+        },
+        {
+          asin: 'ram-2',
+          title: 'G.Skill Trident Z5 32GB (2x16GB) DDR5-6000 CL36',
+          price: { value: 249.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.7,
+          ratings_total: 1456,
+          link: '#',
+          ramType: 'DDR5',
+          estimatedWattage: 12
         }
       ],
       storage: [
@@ -211,7 +286,9 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.7,
           ratings_total: 1876,
-          link: '#'
+          link: '#',
+          pcieVersion: 'PCIe 4.0',
+          estimatedWattage: 8
         }
       ],
       psu: [
@@ -222,7 +299,20 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.8,
           ratings_total: 934,
-          link: '#'
+          link: '#',
+          wattage: 850,
+          estimatedWattage: 0
+        },
+        {
+          asin: 'psu-2',
+          title: 'EVGA SuperNOVA 750 G6 750W 80 Plus Gold Fully Modular',
+          price: { value: 119.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.6,
+          ratings_total: 567,
+          link: '#',
+          wattage: 750,
+          estimatedWattage: 0
         }
       ],
       cooler: [
@@ -233,7 +323,20 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.9,
           ratings_total: 567,
-          link: '#'
+          link: '#',
+          coolerHeight: 165,
+          estimatedWattage: 5
+        },
+        {
+          asin: 'cooler-2',
+          title: 'Corsair H100i RGB PLATINUM 240mm Liquid CPU Cooler',
+          price: { value: 159.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.5,
+          ratings_total: 789,
+          link: '#',
+          coolerHeight: 27,
+          estimatedWattage: 15
         }
       ],
       case: [
@@ -244,7 +347,24 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.4,
           ratings_total: 234,
-          link: '#'
+          link: '#',
+          formFactor: 'ATX',
+          caseMaxGpuLength: 440,
+          caseMaxCoolerHeight: 185,
+          estimatedWattage: 0
+        },
+        {
+          asin: 'case-2',
+          title: 'NZXT H7 Flow RGB ATX Mid Tower Case',
+          price: { value: 139.99, currency: 'USD' },
+          image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
+          rating: 4.3,
+          ratings_total: 456,
+          link: '#',
+          formFactor: 'ATX',
+          caseMaxGpuLength: 381,
+          caseMaxCoolerHeight: 165,
+          estimatedWattage: 0
         }
       ],
       fans: [
@@ -255,7 +375,8 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.8,
           ratings_total: 1456,
-          link: '#'
+          link: '#',
+          estimatedWattage: 3
         }
       ],
       accessories: [
@@ -266,17 +387,150 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
           image: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400',
           rating: 4.2,
           ratings_total: 789,
-          link: '#'
+          link: '#',
+          estimatedWattage: 0
         }
       ]
     };
 
     return mockProducts[category] || [];
   };
+
+  // Compatibility checking function
+  const checkCompatibility = async (currentBuild: Record<string, Product>): Promise<CompatibilityIssue[]> => {
+    const issues: CompatibilityIssue[] = [];
+    
+    const cpu = currentBuild.cpu;
+    const motherboard = currentBuild.motherboard;
+    const ram = currentBuild.ram;
+    const gpu = currentBuild.gpu;
+    const psu = currentBuild.psu;
+    const cooler = currentBuild.cooler;
+    const pcCase = currentBuild.case;
+
+    // CPU and Motherboard socket compatibility
+    if (cpu && motherboard) {
+      if (cpu.socket && motherboard.socket && cpu.socket !== motherboard.socket) {
+        issues.push({
+          component1Key: 'cpu',
+          component2Key: 'motherboard',
+          message: `CPU socket (${cpu.socket}) is not compatible with motherboard socket (${motherboard.socket})`,
+          severity: 'error'
+        });
+      }
+    }
+
+    // Motherboard and RAM type compatibility
+    if (motherboard && ram) {
+      if (motherboard.ramType && ram.ramType && motherboard.ramType !== ram.ramType) {
+        issues.push({
+          component1Key: 'motherboard',
+          component2Key: 'ram',
+          message: `Motherboard supports ${motherboard.ramType} but selected RAM is ${ram.ramType}`,
+          severity: 'error'
+        });
+      }
+    }
+
+    // Case and Motherboard form factor compatibility
+    if (pcCase && motherboard) {
+      if (pcCase.formFactor && motherboard.formFactor) {
+        // Simplified check - in reality, cases support multiple form factors
+        const caseSupportsMotherboard = pcCase.formFactor === 'ATX' && 
+          ['ATX', 'mATX', 'Mini-ITX'].includes(motherboard.formFactor);
+        
+        if (!caseSupportsMotherboard && pcCase.formFactor !== motherboard.formFactor) {
+          issues.push({
+            component1Key: 'case',
+            component2Key: 'motherboard',
+            message: `Case form factor (${pcCase.formFactor}) may not support motherboard form factor (${motherboard.formFactor})`,
+            severity: 'warning'
+          });
+        }
+      }
+    }
+
+    // GPU length compatibility with case
+    if (gpu && pcCase) {
+      if (gpu.gpuLength && pcCase.caseMaxGpuLength) {
+        if (gpu.gpuLength > pcCase.caseMaxGpuLength) {
+          issues.push({
+            component1Key: 'gpu',
+            component2Key: 'case',
+            message: `GPU length (${gpu.gpuLength}mm) exceeds case maximum GPU length (${pcCase.caseMaxGpuLength}mm)`,
+            severity: 'error'
+          });
+        }
+      }
+    }
+
+    // CPU cooler height compatibility with case
+    if (cooler && pcCase) {
+      if (cooler.coolerHeight && pcCase.caseMaxCoolerHeight) {
+        if (cooler.coolerHeight > pcCase.caseMaxCoolerHeight) {
+          issues.push({
+            component1Key: 'cooler',
+            component2Key: 'case',
+            message: `CPU cooler height (${cooler.coolerHeight}mm) exceeds case maximum cooler height (${pcCase.caseMaxCoolerHeight}mm)`,
+            severity: 'error'
+          });
+        }
+      }
+    }
+
+    // Power supply wattage check
+    if (psu) {
+      const totalWattage = Object.values(currentBuild).reduce((sum, component) => {
+        return sum + (component?.estimatedWattage || 0);
+      }, 0);
+
+      if (psu.wattage && totalWattage > 0) {
+        const recommendedWattage = totalWattage * 1.2; // 20% headroom
+        
+        if (psu.wattage < totalWattage) {
+          issues.push({
+            component1Key: 'psu',
+            component2Key: 'system',
+            message: `PSU wattage (${psu.wattage}W) is insufficient for system requirements (${totalWattage}W)`,
+            severity: 'error'
+          });
+        } else if (psu.wattage < recommendedWattage) {
+          issues.push({
+            component1Key: 'psu',
+            component2Key: 'system',
+            message: `PSU wattage (${psu.wattage}W) is below recommended (${Math.ceil(recommendedWattage)}W) for optimal efficiency`,
+            severity: 'warning'
+          });
+        }
+      }
+    }
+
+    // Missing essential components check
+    if (Object.keys(currentBuild).length > 0) {
+      const essentialComponents = ['cpu', 'motherboard', 'ram', 'storage', 'psu'];
+      const missingComponents = essentialComponents.filter(comp => !currentBuild[comp]);
+      
+      if (missingComponents.length > 0) {
+        issues.push({
+          component1Key: 'system',
+          component2Key: 'system',
+          message: `Missing essential components: ${missingComponents.join(', ')}`,
+          severity: 'warning'
+        });
+      }
+    }
+
+    return issues;
+  };
   // Load products when tab changes
   useEffect(() => {
     searchProducts(activeTab).then(setItems);
   }, [activeTab]);
+
+  // Check compatibility when build changes
+  useEffect(() => {
+    checkCompatibility(build).then(setCompatibilityIssues);
+  }, [build]);
 
   // Filter products based on search and price
   const filteredItems = items.filter(item => {
@@ -531,6 +785,86 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Compatibility Issues */}
+        {compatibilityIssues.length > 0 && (
+          <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 p-6 mb-8">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+              <AlertCircle className="h-5 w-5 text-yellow-400" />
+              <span>Compatibility Check</span>
+            </h3>
+            <div className="space-y-3">
+              {compatibilityIssues.map((issue, index) => (
+                <div
+                  key={index}
+                  className={`flex items-start space-x-3 p-4 rounded-lg border ${
+                    issue.severity === 'error'
+                      ? 'bg-red-500/10 border-red-500/20 text-red-300'
+                      : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-300'
+                  }`}
+                >
+                  <AlertCircle className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
+                    issue.severity === 'error' ? 'text-red-400' : 'text-yellow-400'
+                  }`} />
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className={`text-xs font-medium px-2 py-1 rounded ${
+                        issue.severity === 'error'
+                          ? 'bg-red-500/20 text-red-300'
+                          : 'bg-yellow-500/20 text-yellow-300'
+                      }`}>
+                        {issue.severity.toUpperCase()}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {issue.component1Key} ↔ {issue.component2Key}
+                      </span>
+                    </div>
+                    <p className="text-sm">{issue.message}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Compatibility Summary */}
+            <div className="mt-4 pt-4 border-t border-gray-600/50">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">
+                  {compatibilityIssues.filter(i => i.severity === 'error').length} errors, {' '}
+                  {compatibilityIssues.filter(i => i.severity === 'warning').length} warnings
+                </span>
+                <span className={`font-medium ${
+                  compatibilityIssues.some(i => i.severity === 'error')
+                    ? 'text-red-400'
+                    : 'text-yellow-400'
+                }`}>
+                  {compatibilityIssues.some(i => i.severity === 'error')
+                    ? 'Build has compatibility issues'
+                    : 'Build has minor warnings'
+                  }
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Compatibility Status - Show when no issues */}
+        {Object.keys(build).length > 0 && compatibilityIssues.length === 0 && (
+          <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-6 mb-8">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-green-500/20 rounded-full">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-green-300 mb-1">
+                  All Components Compatible
+                </h3>
+                <p className="text-green-400/80 text-sm">
+                  Your selected components are compatible with each other. Great job!
+                </p>
+              </div>
             </div>
           </div>
         )}
