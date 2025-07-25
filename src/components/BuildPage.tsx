@@ -10,7 +10,8 @@ import {
   Save,
   Search,
   Filter,
-  X
+  X,
+  AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
