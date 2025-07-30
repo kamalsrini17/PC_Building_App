@@ -627,192 +627,199 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Component Tabs */}
-        <div className="flex space-x-2 mb-8 overflow-x-auto pb-2">
-          {componentCategories.map(category => {
-            const isSelected = build[category.key];
-            return (
-              <button
-                key={category.key}
-                onClick={() => setActiveTab(category.key)}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all duration-300 whitespace-nowrap ${
-                  activeTab === category.key
-                    ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg'
-                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                } ${isSelected ? 'ring-2 ring-green-400/50' : ''}`}
-              >
-                <category.icon className="h-5 w-5" />
-                <span>{category.name}</span>
-                {isSelected && (
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Selected Components Summary */}
-        {Object.keys(build).length > 0 && (
-          <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 p-6 mb-8">
-            <h3 className="text-lg font-semibold text-white mb-4">Selected Components</h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.entries(build).map(([category, component]) => {
-                const categoryInfo = componentCategories.find(cat => cat.key === category);
+        <div className="flex gap-8">
+          {/* Component Tabs - Vertical Left Sidebar */}
+          <div className="w-64 flex-shrink-0">
+            <div className="space-y-2">
+              {componentCategories.map(category => {
+                const isSelected = build[category.key];
                 return (
-                  <div key={category} className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
-                    {categoryInfo && <categoryInfo.icon className="h-5 w-5 text-red-400" />}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{component.title}</p>
-                      <p className="text-sm text-green-400">
-                        ${component.price?.value?.toFixed(2) || '0.00'}
-                      </p>
-                    </div>
-                  </div>
+                  <button
+                    key={category.key}
+                    onClick={() => setActiveTab(category.key)}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all duration-300 text-left ${
+                      activeTab === category.key
+                        ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg'
+                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                    } ${isSelected ? 'ring-2 ring-green-400/50' : ''}`}
+                  >
+                    <category.icon className="h-5 w-5 flex-shrink-0" />
+                    <span className="flex-1">{category.name}</span>
+                    {isSelected && (
+                      <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
+                    )}
+                  </button>
                 );
               })}
             </div>
           </div>
-        )}
 
-        {/* Compatibility Issues */}
-        {compatibilityIssues.length > 0 && (
-          <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 p-6 mb-8">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-              <AlertCircle className="h-5 w-5 text-yellow-400" />
-              <span>Compatibility Check</span>
-            </h3>
-            <div className="space-y-3">
-              {compatibilityIssues.map((issue, index) => (
-                <div
-                  key={index}
-                  className={`flex items-start space-x-3 p-4 rounded-lg border ${
-                    issue.severity === 'error'
-                      ? 'bg-red-500/10 border-red-500/20 text-red-300'
-                      : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-300'
-                  }`}
-                >
-                  <AlertCircle className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
-                    issue.severity === 'error' ? 'text-red-400' : 'text-yellow-400'
-                  }`} />
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className={`text-xs font-medium px-2 py-1 rounded ${
+          {/* Main Content Area */}
+          <div className="flex-1 min-w-0">
+            {/* Selected Components Summary */}
+            {Object.keys(build).length > 0 && (
+              <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 p-6 mb-8">
+                <h3 className="text-lg font-semibold text-white mb-4">Selected Components</h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Object.entries(build).map(([category, component]) => {
+                    const categoryInfo = componentCategories.find(cat => cat.key === category);
+                    return (
+                      <div key={category} className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
+                        {categoryInfo && <categoryInfo.icon className="h-5 w-5 text-red-400" />}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{component.title}</p>
+                          <p className="text-sm text-green-400">
+                            ${component.price?.value?.toFixed(2) || '0.00'}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Compatibility Issues */}
+            {compatibilityIssues.length > 0 && (
+              <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 p-6 mb-8">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                  <AlertCircle className="h-5 w-5 text-yellow-400" />
+                  <span>Compatibility Check</span>
+                </h3>
+                <div className="space-y-3">
+                  {compatibilityIssues.map((issue, index) => (
+                    <div
+                      key={index}
+                      className={`flex items-start space-x-3 p-4 rounded-lg border ${
                         issue.severity === 'error'
-                          ? 'bg-red-500/20 text-red-300'
-                          : 'bg-yellow-500/20 text-yellow-300'
-                      }`}>
-                        {issue.severity.toUpperCase()}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {issue.component1Key} ↔ {issue.component2Key}
-                      </span>
+                          ? 'bg-red-500/10 border-red-500/20 text-red-300'
+                          : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-300'
+                      }`}
+                    >
+                      <AlertCircle className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
+                        issue.severity === 'error' ? 'text-red-400' : 'text-yellow-400'
+                      }`} />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className={`text-xs font-medium px-2 py-1 rounded ${
+                            issue.severity === 'error'
+                              ? 'bg-red-500/20 text-red-300'
+                              : 'bg-yellow-500/20 text-yellow-300'
+                          }`}>
+                            {issue.severity.toUpperCase()}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {issue.component1Key} ↔ {issue.component2Key}
+                          </span>
+                        </div>
+                        <p className="text-sm">{issue.message}</p>
+                      </div>
                     </div>
-                    <p className="text-sm">{issue.message}</p>
+                  ))}
+                </div>
+                
+                {/* Compatibility Summary */}
+                <div className="mt-4 pt-4 border-t border-gray-600/50">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">
+                      {compatibilityIssues.filter(i => i.severity === 'error').length} errors, {' '}
+                      {compatibilityIssues.filter(i => i.severity === 'warning').length} warnings
+                    </span>
+                    <span className={`font-medium ${
+                      compatibilityIssues.some(i => i.severity === 'error')
+                        ? 'text-red-400'
+                        : 'text-yellow-400'
+                    }`}>
+                      {compatibilityIssues.some(i => i.severity === 'error')
+                        ? 'Build has compatibility issues'
+                        : 'Build has minor warnings'
+                      }
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-            
-            {/* Compatibility Summary */}
-            <div className="mt-4 pt-4 border-t border-gray-600/50">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">
-                  {compatibilityIssues.filter(i => i.severity === 'error').length} errors, {' '}
-                  {compatibilityIssues.filter(i => i.severity === 'warning').length} warnings
-                </span>
-                <span className={`font-medium ${
-                  compatibilityIssues.some(i => i.severity === 'error')
-                    ? 'text-red-400'
-                    : 'text-yellow-400'
-                }`}>
-                  {compatibilityIssues.some(i => i.severity === 'error')
-                    ? 'Build has compatibility issues'
-                    : 'Build has minor warnings'
-                  }
-                </span>
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* Compatibility Status - Show when no issues */}
-        {Object.keys(build).length > 0 && compatibilityIssues.length === 0 && (
-          <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-6 mb-8">
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-green-500/20 rounded-full">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+            {/* Compatibility Status - Show when no issues */}
+            {Object.keys(build).length > 0 && compatibilityIssues.length === 0 && (
+              <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-6 mb-8">
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center justify-center w-10 h-10 bg-green-500/20 rounded-full">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-green-300 mb-1">
+                      All Components Compatible
+                    </h3>
+                    <p className="text-green-400/80 text-sm">
+                      Your selected components are compatible with each other. Great job!
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-green-300 mb-1">
-                  All Components Compatible
-                </h3>
-                <p className="text-green-400/80 text-sm">
-                  Your selected components are compatible with each other. Great job!
+            )}
+
+            {/* Component Grid */}
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
+                  <p className="text-gray-400">Loading components...</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {items.map(item => (
+                  <div
+                    key={item.asin}
+                    onClick={() => handlePartClick(item)}
+                    className={`bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden cursor-pointer transition-all duration-300 hover:border-red-500/50 hover:scale-105 group aspect-square ${
+                      build[activeTab]?.asin === item.asin ? 'ring-2 ring-red-500 border-red-500' : ''
+                    }`}
+                  >
+                    {/* Product Image */}
+                    <div className="h-3/4 overflow-hidden bg-gray-700/30">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400';
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Product Info */}
+                    <div className="h-1/4 p-2 flex items-center">
+                      <h3 className="font-medium text-white text-xs line-clamp-2 group-hover:text-red-300 transition-colors">
+                        {item.title}
+                      </h3>
+                    </div>
+                    
+                    {/* Selected Indicator */}
+                    {build[activeTab]?.asin === item.asin && (
+                      <div className="absolute top-2 right-2 w-3 h-3 bg-green-400 rounded-full"></div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* No Results */}
+            {!loading && items.length === 0 && (
+              <div className="text-center py-16">
+                <div className="flex items-center justify-center w-24 h-24 bg-gray-800/50 rounded-full mb-6 mx-auto">
+                  <div className="h-12 w-12 text-gray-400">📦</div>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">No Products Available</h3>
+                <p className="text-gray-400 mb-6">
+                  {apiError ? 'API is not available. Using mock data.' : 'No products found for this category.'}
                 </p>
               </div>
-            </div>
+            )}
           </div>
-        )}
-
-        {/* Component Grid */}
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
-              <p className="text-gray-400">Loading components...</p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {items.map(item => (
-              <div
-                key={item.asin}
-                onClick={() => handlePartClick(item)}
-                className={`bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden cursor-pointer transition-all duration-300 hover:border-red-500/50 hover:scale-105 group aspect-square ${
-                  build[activeTab]?.asin === item.asin ? 'ring-2 ring-red-500 border-red-500' : ''
-                }`}
-              >
-                {/* Product Image */}
-                <div className="h-3/4 overflow-hidden bg-gray-700/30">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400';
-                    }}
-                  />
-                </div>
-                
-                {/* Product Info */}
-                <div className="h-1/4 p-2 flex items-center">
-                  <h3 className="font-medium text-white text-xs line-clamp-2 group-hover:text-red-300 transition-colors">
-                    {item.title}
-                  </h3>
-                </div>
-                
-                {/* Selected Indicator */}
-                {build[activeTab]?.asin === item.asin && (
-                  <div className="absolute top-2 right-2 w-3 h-3 bg-green-400 rounded-full"></div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* No Results */}
-        {!loading && items.length === 0 && (
-          <div className="text-center py-16">
-            <div className="flex items-center justify-center w-24 h-24 bg-gray-800/50 rounded-full mb-6 mx-auto">
-              <div className="h-12 w-12 text-gray-400">📦</div>
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No Products Available</h3>
-            <p className="text-gray-400 mb-6">
-              {apiError ? 'API is not available. Using mock data.' : 'No products found for this category.'}
-            </p>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Save Build Modal */}
