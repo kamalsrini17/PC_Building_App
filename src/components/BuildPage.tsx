@@ -8,14 +8,12 @@ import {
   Fan,
   ArrowLeft,
   Save,
-  Search,
-  Filter,
-  X,
   AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import SaveBuildModal from './SaveBuildModal';
+import PartInfoPage from './PartInfoPage';
 
 // Component categories configuration
 const componentCategories = [
@@ -77,10 +75,9 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [showSaveModal, setShowSaveModal] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [priceFilter, setPriceFilter] = useState<{ min: number; max: number }>({ min: 0, max: 10000 });
-  const [showFilters, setShowFilters] = useState<boolean>(false);
   const [compatibilityIssues, setCompatibilityIssues] = useState<CompatibilityIssue[]>([]);
+  const [showPartInfo, setShowPartInfo] = useState<boolean>(false);
+  const [selectedPart, setSelectedPart] = useState<Product | null>(null);
 
   // Rainforest API configuration
   const RAINFOREST_API_KEY = import.meta.env.VITE_RAINFOREST_API_KEY;
@@ -533,31 +530,16 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
     checkCompatibility(build).then(setCompatibilityIssues);
   }, [build]);
 
-  // Filter products based on search and price
-  const filteredItems = items.filter(item => {
-    const matchesSearch = !searchQuery || 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const price = item.price?.value || 0;
-    const matchesPrice = price >= priceFilter.min && price <= priceFilter.max;
-    
-    return matchesSearch && matchesPrice;
-  });
-
   // Handle component selection
-  const handleSelect = (item: Product) => {
+  const handleAddToBuild = (item: Product) => {
     setBuild(prev => ({ ...prev, [activeTab]: item }));
+    setShowPartInfo(false);
   };
 
-  // Handle search
-  const handleSearch = async () => {
-    if (searchQuery.trim()) {
-      const results = await searchProducts(activeTab, searchQuery);
-      setItems(results);
-    } else {
-      const results = await searchProducts(activeTab);
-      setItems(results);
-    }
+  // Handle part card click
+  const handlePartClick = (item: Product) => {
+    setSelectedPart(item);
+    setShowPartInfo(true);
   };
 
   // Calculate total price
@@ -592,6 +574,18 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
     }
     setShowSaveModal(false);
   };
+
+  // Show PartInfoPage if a part is selected
+  if (showPartInfo && selectedPart) {
+    return (
+      <PartInfoPage
+        part={selectedPart}
+        onAddToBuild={handleAddToBuild}
+        onBack={() => setShowPartInfo(false)}
+        isSelected={build[activeTab]?.asin === selectedPart.asin}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -655,116 +649,6 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
               </button>
             );
           })}
-        </div>
-
-        {/* Search and Filters */}
-        <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 p-6 mb-8">
-          {/* API Status */}
-          <div className="mb-4">
-            {usingRealData ? (
-              <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0 animate-pulse"></div>
-                <p className="text-green-400 text-sm">✓ Using live Amazon product data</p>
-              </div>
-            ) : apiError ? (
-              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 flex items-center space-x-2">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0"></div>
-                <p className="text-yellow-400 text-sm">{apiError}</p>
-              </div>
-            ) : (
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></div>
-                <p className="text-blue-400 text-sm">Ready to search Amazon products</p>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search Bar */}
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-colors"
-                  placeholder={`Search ${componentCategories.find(c => c.key === activeTab)?.name || 'components'}...`}
-                />
-              </div>
-            </div>
-
-            {/* Search Button */}
-            <button
-              onClick={handleSearch}
-              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center space-x-2"
-            >
-              <Search className="h-5 w-5" />
-              <span>Search</span>
-            </button>
-
-            {/* Filter Toggle */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="bg-gray-700/50 hover:bg-gray-600/50 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center space-x-2"
-            >
-              <Filter className="h-5 w-5" />
-              <span>Filters</span>
-            </button>
-          </div>
-
-          {/* Filters Panel */}
-          {showFilters && (
-            <div className="mt-6 pt-6 border-t border-gray-600/50">
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Price Range */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-3">
-                    Price Range
-                  </label>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-1">
-                      <input
-                        type="number"
-                        value={priceFilter.min}
-                        onChange={(e) => setPriceFilter(prev => ({ ...prev, min: Number(e.target.value) }))}
-                        className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-red-500/50"
-                        placeholder="Min"
-                        min="0"
-                      />
-                    </div>
-                    <span className="text-gray-400">to</span>
-                    <div className="flex-1">
-                      <input
-                        type="number"
-                        value={priceFilter.max}
-                        onChange={(e) => setPriceFilter(prev => ({ ...prev, max: Number(e.target.value) }))}
-                        className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-red-500/50"
-                        placeholder="Max"
-                        min="0"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Clear Filters */}
-                <div className="flex items-end">
-                  <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      setPriceFilter({ min: 0, max: 10000 });
-                      searchProducts(activeTab).then(setItems);
-                    }}
-                    className="bg-gray-600/50 hover:bg-gray-500/50 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center space-x-2"
-                  >
-                    <X className="h-4 w-4" />
-                    <span>Clear Filters</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Selected Components Summary */}
@@ -879,21 +763,21 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
             </div>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredItems.map(item => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {items.map(item => (
               <div
                 key={item.asin}
-                onClick={() => handleSelect(item)}
-                className={`bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden cursor-pointer transition-all duration-300 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/10 group ${
+                onClick={() => handlePartClick(item)}
+                className={`bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden cursor-pointer transition-all duration-300 hover:border-red-500/50 hover:scale-105 group aspect-square ${
                   build[activeTab]?.asin === item.asin ? 'ring-2 ring-red-500 border-red-500' : ''
                 }`}
               >
                 {/* Product Image */}
-                <div className="aspect-square overflow-hidden bg-gray-700/30">
+                <div className="h-3/4 overflow-hidden bg-gray-700/30">
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400';
@@ -902,70 +786,31 @@ export default function BuildPage({ onBackToHome }: BuildPageProps) {
                 </div>
                 
                 {/* Product Info */}
-                <div className="p-4">
-                  <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-red-300 transition-colors text-sm">
+                <div className="h-1/4 p-2 flex items-center">
+                  <h3 className="font-medium text-white text-xs line-clamp-2 group-hover:text-red-300 transition-colors">
                     {item.title}
                   </h3>
-                  
-                  {/* Rating */}
-                  {item.rating && (
-                    <div className="flex items-center space-x-1 mb-2">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <div
-                            key={i}
-                            className={`w-3 h-3 ${
-                              i < Math.floor(item.rating || 0) ? 'text-yellow-400' : 'text-gray-600'
-                            }`}
-                          >
-                            ★
-                          </div>
-                        ))}
-                      </div>
-                      <span className="text-xs text-gray-400">
-                        ({item.ratings_total || 0})
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* Price */}
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg font-bold text-green-400">
-                      ${item.price?.value?.toFixed(2) || 'N/A'}
-                    </p>
-                    {build[activeTab]?.asin === item.asin && (
-                      <div className="flex items-center space-x-1 text-green-400 text-sm">
-                        <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                        <span>Selected</span>
-                      </div>
-                    )}
-                  </div>
                 </div>
+                
+                {/* Selected Indicator */}
+                {build[activeTab]?.asin === item.asin && (
+                  <div className="absolute top-2 right-2 w-3 h-3 bg-green-400 rounded-full"></div>
+                )}
               </div>
             ))}
           </div>
         )}
 
         {/* No Results */}
-        {!loading && filteredItems.length === 0 && (
+        {!loading && items.length === 0 && (
           <div className="text-center py-16">
             <div className="flex items-center justify-center w-24 h-24 bg-gray-800/50 rounded-full mb-6 mx-auto">
-              <Search className="h-12 w-12 text-gray-400" />
+              <div className="h-12 w-12 text-gray-400">📦</div>
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No Products Found</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">No Products Available</h3>
             <p className="text-gray-400 mb-6">
-              {apiError ? 'API is not available. Please check your configuration.' : 'Try adjusting your search terms or filters to find more products.'}
+              {apiError ? 'API is not available. Using mock data.' : 'No products found for this category.'}
             </p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setPriceFilter({ min: 0, max: 10000 });
-                searchProducts(activeTab).then(setItems);
-              }}
-              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300"
-            >
-              {apiError ? 'Retry' : 'Clear Search'}
-            </button>
           </div>
         )}
       </div>
