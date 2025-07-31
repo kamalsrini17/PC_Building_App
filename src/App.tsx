@@ -159,60 +159,136 @@ function App() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-900/20 to-black/40"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <h2 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-red-200 to-red-400 bg-clip-text text-transparent">
-              Build Your Dream PC
-            </h2>
-            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Create the perfect gaming rig, workstation, or home computer with our expert guidance and compatibility checking system.
-            </p>
-          </div>
-
-          {/* Main Action Cards */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Start Your Build Card */}
-            <div 
-              onClick={handleStartBuild}
-              className="group relative bg-gradient-to-br from-red-600 to-red-800 p-8 rounded-2xl shadow-2xl hover:shadow-red-500/20 transition-all duration-300 hover:scale-105 cursor-pointer"
-            >
-              <div className="absolute inset-0 bg-black/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-center w-16 h-16 bg-white/10 rounded-full mb-6 group-hover:bg-white/20 transition-colors">
-                  <Cpu className="h-8 w-8 text-white" />
+      <section className="relative overflow-hidden min-h-screen flex items-center">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-red-900/20 via-black/60 to-black/80">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(239,68,68,0.1),transparent_50%)] animate-pulse"></div>
+          <div className="absolute top-20 left-20 w-2 h-2 bg-red-400 rounded-full animate-ping"></div>
+          <div className="absolute top-40 right-32 w-1 h-1 bg-red-300 rounded-full animate-pulse delay-1000"></div>
+          <div className="absolute bottom-32 left-1/4 w-1.5 h-1.5 bg-red-500 rounded-full animate-ping delay-500"></div>
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+          <div className="grid lg:grid-cols-12 gap-8 items-center">
+            {/* Left Side - Welcome Section */}
+            <div className="lg:col-span-5 space-y-8">
+              {/* Welcome Header */}
+              <div className="space-y-4">
+                <div className="inline-flex items-center space-x-2 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-2 animate-fade-in">
+                  <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                  <span className="text-red-300 text-sm font-medium">Welcome to PC Builder</span>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-white">Start Your Build</h3>
-                <p className="text-red-100 mb-6 leading-relaxed">
-                  {isAuthenticated 
-                    ? 'Configure your perfect PC with our intelligent component selector. Get real-time compatibility checks and performance estimates.'
-                    : 'Sign in to start building your perfect PC with our intelligent component selector and compatibility checking system.'
-                  }
+                <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white via-red-200 to-red-400 bg-clip-text text-transparent animate-slide-up">
+                  Build Your Dream PC
+                </h1>
+                <p className="text-lg text-gray-300 leading-relaxed animate-slide-up delay-200">
+                  Create the perfect gaming rig, workstation, or home computer with our expert guidance and compatibility checking system.
                 </p>
-                <div className="flex items-center text-white font-semibold group-hover:translate-x-2 transition-transform duration-300">
-                  <span>{isAuthenticated ? 'Begin Building' : 'Sign In to Build'}</span>
-                  <Zap className="h-5 w-5 ml-2" />
+              </div>
+
+              {/* Account Info */}
+              <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4 animate-slide-up delay-300">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <User className="h-5 w-5 text-red-400" />
+                    <span className="text-gray-300 text-sm">
+                      {isAuthenticated ? `Signed in as ${user?.email}` : 'Not signed in'}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full ${isAuthenticated ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                    <span className="text-xs text-gray-400">
+                      {isAuthenticated ? 'Online' : 'Offline'}
+                    </span>
+                  </div>
                 </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-2 gap-4 animate-slide-up delay-400">
+                <button
+                  onClick={() => setCurrentPage('myBuilds')}
+                  className="group bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700/50 hover:border-red-500/30 rounded-xl p-4 transition-all duration-300 hover:scale-105"
+                >
+                  <Package className="h-6 w-6 text-red-400 mb-2 group-hover:scale-110 transition-transform" />
+                  <p className="text-white font-medium text-sm">My Builds</p>
+                  <p className="text-gray-400 text-xs">View saved builds</p>
+                </button>
+                
+                <button
+                  onClick={() => setCurrentPage('cart')}
+                  className="group bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700/50 hover:border-red-500/30 rounded-xl p-4 transition-all duration-300 hover:scale-105 relative"
+                >
+                  <ShoppingCart className="h-6 w-6 text-red-400 mb-2 group-hover:scale-110 transition-transform" />
+                  <p className="text-white font-medium text-sm">Cart</p>
+                  <p className="text-gray-400 text-xs">{cartItems.length} items</p>
+                  {cartItems.length > 0 && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">{cartItems.length}</span>
+                    </div>
+                  )}
+                </button>
               </div>
             </div>
 
-            {/* Talk to Expert Card */}
-            <div className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl shadow-2xl hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border border-red-500/20 hover:border-red-500/40">
-              <div className="absolute inset-0 bg-red-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-center w-16 h-16 bg-red-500/10 rounded-full mb-6 group-hover:bg-red-500/20 transition-colors">
-                  <MessageCircle className="h-8 w-8 text-red-400" />
+            {/* Right Side - Main Action */}
+            <div className="lg:col-span-7 flex justify-center">
+              <div className="relative max-w-lg w-full">
+                {/* Main Build Card */}
+                <div 
+                  onClick={handleStartBuild}
+                  className="group relative bg-gradient-to-br from-red-600 via-red-700 to-red-800 p-8 rounded-3xl shadow-2xl hover:shadow-red-500/30 transition-all duration-500 hover:scale-105 cursor-pointer overflow-hidden animate-slide-up delay-500"
+                >
+                  {/* Animated Background Elements */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+                  <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-white/5 rounded-full group-hover:scale-125 transition-transform duration-700 delay-100"></div>
+                  
+                  <div className="relative z-10 text-center space-y-6">
+                    {/* Icon */}
+                    <div className="flex items-center justify-center w-20 h-20 bg-white/10 rounded-full mb-6 group-hover:bg-white/20 transition-all duration-300 group-hover:rotate-12 mx-auto">
+                      <Cpu className="h-10 w-10 text-white group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                    
+                    {/* Title */}
+                    <h2 className="text-3xl font-bold text-white group-hover:text-red-100 transition-colors duration-300">
+                      {isAuthenticated ? 'Build Your PC' : 'Get Started'}
+                    </h2>
+                    
+                    {/* Description */}
+                    <p className="text-red-100/90 leading-relaxed">
+                      {isAuthenticated 
+                        ? 'Configure your perfect PC with our intelligent component selector and real-time compatibility checks.'
+                        : 'Sign in to start building your perfect PC with our intelligent component selector and compatibility checking system.'
+                      }
+                    </p>
+                    
+                    {/* Action Button */}
+                    <div className="pt-4">
+                      <div className="inline-flex items-center space-x-3 bg-white/10 hover:bg-white/20 rounded-full px-6 py-3 group-hover:translate-y-1 transition-all duration-300">
+                        <span className="text-white font-semibold">
+                          {isAuthenticated ? 'Start Building' : 'Sign In to Build'}
+                        </span>
+                        <Zap className="h-5 w-5 text-white group-hover:rotate-12 transition-transform duration-300" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-white">Talk to an Expert</h3>
-                <p className="text-gray-300 mb-6 leading-relaxed">
-                  Get personalized advice from our PC building specialists. Schedule a consultation or chat with us live for expert guidance.
-                </p>
-                <div className="flex items-center text-red-400 font-semibold group-hover:translate-x-2 transition-transform duration-300">
-                  <span>Get Expert Help</span>
-                  <MessageCircle className="h-5 w-5 ml-2" />
-                </div>
+
+                {/* Floating Elements */}
+                <div className="absolute -top-4 -left-4 w-8 h-8 bg-red-400/20 rounded-lg rotate-12 animate-float"></div>
+                <div className="absolute -bottom-4 -right-4 w-6 h-6 bg-red-300/20 rounded-full animate-float delay-1000"></div>
+                <div className="absolute top-1/2 -right-8 w-4 h-4 bg-red-500/20 rounded-lg rotate-45 animate-float delay-500"></div>
               </div>
+            </div>
+          </div>
+
+          {/* Bottom Section - Prebuilts */}
+          <div className="mt-16 text-center animate-slide-up delay-700">
+            <div className="inline-flex items-center space-x-4 bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-full px-6 py-3 hover:border-red-500/30 transition-colors duration-300 cursor-pointer group">
+              <Trophy className="h-5 w-5 text-red-400 group-hover:scale-110 transition-transform duration-300" />
+              <span className="text-gray-300 font-medium">Need a PC for College?</span>
+              <span className="text-red-400 text-sm">View Prebuilts →</span>
             </div>
           </div>
         </div>
