@@ -159,61 +159,144 @@ function App() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-900/20 to-black/40"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <h2 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-red-200 to-red-400 bg-clip-text text-transparent">
-              Build Your Dream PC
-            </h2>
-            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Create the perfect gaming rig, workstation, or home computer with our expert guidance and compatibility checking system.
-            </p>
+      <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-900 via-black to-red-900/20">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-32 h-32 bg-red-500/10 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute top-40 right-32 w-24 h-24 bg-white/5 rounded-full blur-lg animate-bounce"></div>
+          <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-red-400/5 rounded-full blur-2xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-28 h-28 bg-white/3 rounded-full blur-xl animate-bounce"></div>
+        </div>
+
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* App Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-16">
+            {/* My Builds App */}
+            <div 
+              onClick={() => setCurrentPage('myBuilds')}
+              className="group relative bg-gradient-to-br from-red-600/20 to-red-800/20 backdrop-blur-sm border border-red-500/30 rounded-3xl p-6 aspect-square flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:border-red-400/50 hover:shadow-lg hover:shadow-red-500/20"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10 text-center">
+                <Package className="h-8 w-8 text-red-400 mx-auto mb-2 group-hover:text-red-300 transition-colors" />
+                <span className="text-white text-sm font-medium group-hover:text-red-100 transition-colors">My Builds</span>
+              </div>
+            </div>
+
+            {/* Prebuilts App */}
+            <div className="group relative bg-gradient-to-br from-blue-600/20 to-blue-800/20 backdrop-blur-sm border border-blue-500/30 rounded-3xl p-6 aspect-square flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10 text-center">
+                <Monitor className="h-8 w-8 text-blue-400 mx-auto mb-2 group-hover:text-blue-300 transition-colors" />
+                <span className="text-white text-sm font-medium group-hover:text-blue-100 transition-colors">Prebuilts</span>
+              </div>
+            </div>
+
+            {/* Guides App */}
+            <div className="group relative bg-gradient-to-br from-green-600/20 to-green-800/20 backdrop-blur-sm border border-green-500/30 rounded-3xl p-6 aspect-square flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:border-green-400/50 hover:shadow-lg hover:shadow-green-500/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10 text-center">
+                <Shield className="h-8 w-8 text-green-400 mx-auto mb-2 group-hover:text-green-300 transition-colors" />
+                <span className="text-white text-sm font-medium group-hover:text-green-100 transition-colors">Guides</span>
+              </div>
+            </div>
+
+            {/* Cart App */}
+            {isAuthenticated && (
+              <div 
+                onClick={() => setCurrentPage('cart')}
+                className="group relative bg-gradient-to-br from-purple-600/20 to-purple-800/20 backdrop-blur-sm border border-purple-500/30 rounded-3xl p-6 aspect-square flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:border-purple-400/50 hover:shadow-lg hover:shadow-purple-500/20"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative z-10 text-center">
+                  <div className="relative">
+                    <ShoppingCart className="h-8 w-8 text-purple-400 mx-auto mb-2 group-hover:text-purple-300 transition-colors" />
+                    {cartItems.length > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {cartItems.length}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-white text-sm font-medium group-hover:text-purple-100 transition-colors">Cart</span>
+                </div>
+              </div>
+            )}
+
+            {/* College PCs App */}
+            <div className="group relative bg-gradient-to-br from-yellow-600/20 to-yellow-800/20 backdrop-blur-sm border border-yellow-500/30 rounded-3xl p-6 aspect-square flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:border-yellow-400/50 hover:shadow-lg hover:shadow-yellow-500/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10 text-center">
+                <Trophy className="h-8 w-8 text-yellow-400 mx-auto mb-2 group-hover:text-yellow-300 transition-colors" />
+                <span className="text-white text-sm font-medium group-hover:text-yellow-100 transition-colors">College PCs</span>
+              </div>
+            </div>
+
+            {/* Sign In/Sign Up App */}
+            {!isAuthenticated && (
+              <div 
+                onClick={() => setShowAuthModal(true)}
+                className="group relative bg-gradient-to-br from-indigo-600/20 to-indigo-800/20 backdrop-blur-sm border border-indigo-500/30 rounded-3xl p-6 aspect-square flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:border-indigo-400/50 hover:shadow-lg hover:shadow-indigo-500/20"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative z-10 text-center">
+                  <User className="h-8 w-8 text-indigo-400 mx-auto mb-2 group-hover:text-indigo-300 transition-colors" />
+                  <span className="text-white text-sm font-medium group-hover:text-indigo-100 transition-colors">Sign In</span>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Main Action Cards */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Start Your Build Card */}
-            <div 
-              onClick={handleStartBuild}
-              className="group relative bg-gradient-to-br from-red-600 to-red-800 p-8 rounded-2xl shadow-2xl hover:shadow-red-500/20 transition-all duration-300 hover:scale-105 cursor-pointer"
-            >
-              <div className="absolute inset-0 bg-black/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-center w-16 h-16 bg-white/10 rounded-full mb-6 group-hover:bg-white/20 transition-colors">
-                  <Cpu className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4 text-white">Start Your Build</h3>
-                <p className="text-red-100 mb-6 leading-relaxed">
-                  {isAuthenticated 
-                    ? 'Configure your perfect PC with our intelligent component selector. Get real-time compatibility checks and performance estimates.'
-                    : 'Sign in to start building your perfect PC with our intelligent component selector and compatibility checking system.'
-                  }
-                </p>
-                <div className="flex items-center text-white font-semibold group-hover:translate-x-2 transition-transform duration-300">
-                  <span>{isAuthenticated ? 'Begin Building' : 'Sign In to Build'}</span>
-                  <Zap className="h-5 w-5 ml-2" />
+          {/* Center Split Triangle Button */}
+          <div className="flex justify-center mb-16">
+            <div className="relative w-80 h-80">
+              {/* Classic Configurator - Left Triangle */}
+              <div 
+                onClick={handleStartBuild}
+                className="group absolute inset-0 cursor-pointer"
+                style={{
+                  clipPath: 'polygon(0 0, 50% 0, 50% 100%, 0 100%)'
+                }}
+              >
+                <div className="w-full h-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center transition-all duration-500 group-hover:scale-105 group-hover:rotate-1 group-hover:shadow-2xl group-hover:shadow-red-500/30">
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative z-10 text-center transform -translate-x-8">
+                    <Cpu className="h-12 w-12 text-white mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
+                    <h3 className="text-xl font-bold text-white mb-2">Classic</h3>
+                    <h3 className="text-xl font-bold text-white">Configurator</h3>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Talk to Expert Card */}
-            <div className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl shadow-2xl hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border border-red-500/20 hover:border-red-500/40">
-              <div className="absolute inset-0 bg-red-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-center w-16 h-16 bg-red-500/10 rounded-full mb-6 group-hover:bg-red-500/20 transition-colors">
-                  <MessageCircle className="h-8 w-8 text-red-400" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4 text-white">Talk to an Expert</h3>
-                <p className="text-gray-300 mb-6 leading-relaxed">
-                  Get personalized advice from our PC building specialists. Schedule a consultation or chat with us live for expert guidance.
-                </p>
-                <div className="flex items-center text-red-400 font-semibold group-hover:translate-x-2 transition-transform duration-300">
-                  <span>Get Expert Help</span>
-                  <MessageCircle className="h-5 w-5 ml-2" />
+              {/* PC AI - Right Triangle */}
+              <div 
+                className="group absolute inset-0 cursor-pointer"
+                style={{
+                  clipPath: 'polygon(50% 0, 100% 0, 100% 100%, 50% 100%)'
+                }}
+              >
+                <div className="w-full h-full bg-gradient-to-bl from-gray-700 to-gray-900 flex items-center justify-center transition-all duration-500 group-hover:scale-105 group-hover:-rotate-1 group-hover:shadow-2xl group-hover:shadow-gray-500/30">
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative z-10 text-center transform translate-x-8">
+                    <MessageCircle className="h-12 w-12 text-white mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
+                    <h3 className="text-xl font-bold text-white mb-2">PC AI</h3>
+                    <h3 className="text-xl font-bold text-white">Assistant</h3>
+                  </div>
                 </div>
               </div>
+
+              {/* Center Divider Line */}
+              <div className="absolute inset-y-0 left-1/2 w-px bg-white/30 transform -translate-x-px"></div>
             </div>
+          </div>
+
+          {/* Title */}
+          <div className="text-center">
+            <h2 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-white via-red-200 to-red-400 bg-clip-text text-transparent">
+              PC Builder Pro
+            </h2>
+            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+              Your ultimate destination for building the perfect PC
+            </p>
           </div>
         </div>
       </section>
