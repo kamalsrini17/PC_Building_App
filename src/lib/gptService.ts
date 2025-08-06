@@ -1,24 +1,30 @@
 export async function askGPT(prompt: string): Promise<string> {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4", // You can change to "gpt-3.5-turbo" if you want it faster/cheaper
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-    }),
-  });
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4", // change to "gpt-3.5-turbo" if needed
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+      }),
+    });
 
-  console.log("[GPT Response]", data); // ← ADD THIS
+    const data = await response.json();
 
-if (!response.ok) {
-  console.error("[GPT Error]", data);
-  throw new Error(data?.error?.message || "GPT request failed");
-}
+    console.log("[GPT Raw Response]", data);
 
-return data.choices?.[0]?.message?.content || "No reply from GPT.";
+    if (!response.ok) {
+      console.error("[OpenAI Error]", data);
+      throw new Error(data?.error?.message || "GPT request failed");
+    }
 
+    return data.choices?.[0]?.message?.content || "No reply from GPT.";
+  } catch (err: any) {
+    console.error("[GPT Exception]", err);
+    throw new Error("Error talking to ChatGPT");
+  }
 }
