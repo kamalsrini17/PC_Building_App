@@ -12,6 +12,13 @@ export async function askGPT(prompt: string): Promise<string> {
     }),
   });
 
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "Something went wrong.";
+  console.log("[GPT Response]", data); // ← ADD THIS
+
+if (!response.ok) {
+  console.error("[GPT Error]", data);
+  throw new Error(data?.error?.message || "GPT request failed");
+}
+
+return data.choices?.[0]?.message?.content || "No reply from GPT.";
+
 }
