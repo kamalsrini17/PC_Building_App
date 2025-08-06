@@ -5,6 +5,7 @@ import BuildPage from './components/BuildPage';
 import AuthModal from './components/AuthModal';
 import MyBuildsPage from './pages/MyBuildsPage';
 import CartPage from './pages/CartPage';
+import PCAIPage from './pages/PCAIPage';
 import { useAuth } from './hooks/useAuth';
 
 interface CartItem {
@@ -17,7 +18,7 @@ interface CartItem {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'build' | 'myBuilds' | 'cart'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'build' | 'myBuilds' | 'cart' | 'pcai'>('home');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -68,6 +69,10 @@ function App() {
 
   if (currentPage === 'build') {
     return <BuildPage onBackToHome={() => setCurrentPage('home')} />;
+  }
+
+  if (currentPage === 'pcai') {
+    return <PCAIPage onBackToHome={() => setCurrentPage('home')} />;
   }
 
   if (currentPage === 'myBuilds') {
@@ -126,6 +131,7 @@ function App() {
 
               {/* PC AI - Right Triangle */}
               <div 
+                onClick={() => setCurrentPage('pcai')}
                 className="group absolute inset-0 cursor-pointer"
                 style={{
                   clipPath: 'polygon(50% 0, 100% 0, 100% 100%, 50% 100%)'
