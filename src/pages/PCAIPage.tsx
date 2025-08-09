@@ -24,7 +24,7 @@ type Build = {
 
 // -------------------- Interview copy --------------------
 const INFO: Record<keyof Collected, string> = {
-  useCase: 'Use‑case tells me how to balance CPU vs GPU and what features matter.',
+  useCase: 'Use-case tells me how to balance CPU vs GPU and what features matter.',
   budget: 'Budget helps me pick parts that maximize performance per dollar.',
   resolution: 'Target resolution drives the GPU choice and VRAM needs.',
   frameRate: 'Your FPS target helps size the CPU and GPU appropriately.'
@@ -39,7 +39,7 @@ const questionFor = (missing: keyof Collected): string => {
     case 'resolution':
       return 'What resolution will you play/work at? (1080p, 1440p, 4K)';
     case 'frameRate':
-      return 'Do you have a frame‑rate target? (60, 120, 144, 240 fps)';
+      return 'Do you have a frame-rate target? (60, 120, 144, 240 fps)';
     default:
       return '';
   }
@@ -49,11 +49,11 @@ const REQUIRED_ORDER: (keyof Collected)[] = ['useCase', 'budget', 'resolution', 
 
 function summary(c: Collected): string {
   const parts = [
-    c.useCase && use‑case: ${c.useCase},
-    c.budget && budget: $${c.budget.toLocaleString()},
-    c.resolution && resolution: ${c.resolution},
-    c.frameRate && fps target: ${c.frameRate}
-  ].filter(Boolean);
+    c.useCase && `use-case: ${c.useCase}`,
+    c.budget && `budget: $${c.budget.toLocaleString()}`,
+    c.resolution && `resolution: ${c.resolution}`,
+    c.frameRate && `fps target: ${c.frameRate}`
+  ].filter(Boolean) as string[];
   return parts.join(', ');
 }
 
@@ -99,8 +99,8 @@ function parseInput(msg: string): Partial<Collected> {
 // -------------------- Mock online search + inventory --------------------
 const CPU = {
   entry: { name: 'AMD Ryzen 5 5600', price: 130 },
-  mid: { name: 'Intel Core i5‑13400F', price: 210 },
-  upper: { name: 'Intel Core i5‑13600K', price: 320 },
+  mid: { name: 'Intel Core i5-13400F', price: 210 },
+  upper: { name: 'Intel Core i5-13600K', price: 320 },
   high: { name: 'AMD Ryzen 7 7800X3D', price: 420 }
 } as const;
 
@@ -114,7 +114,7 @@ const GPU = {
 
 // Our current (mock) inventory — swap with real data later
 const OUR_PARTS = {
-  cpus: new Set(['AMD Ryzen 5 5600', 'Intel Core i5‑13600K', 'AMD Ryzen 7 7800X3D']),
+  cpus: new Set(['AMD Ryzen 5 5600', 'Intel Core i5-13600K', 'AMD Ryzen 7 7800X3D']),
   gpus: new Set(['Radeon RX 6600', 'Radeon RX 6700 XT', 'GeForce RTX 4070 Super'])
 };
 
@@ -182,12 +182,12 @@ async function fetchCandidateBuilds(c: Collected): Promise<Build[]> {
       name: 'Quiet/Compact',
       cpu: CPU[tier],
       gpu: GPU[gpuKey],
-      ram: { name: '32GB Low‑profile', price: 120 },
+      ram: { name: '32GB Low-profile', price: 120 },
       storage: { name: '1TB NVMe SSD', price: 70 },
       psu: { name: '650W SFX 80+ Gold', price: 130 },
-      case: { name: 'Mini‑ITX Quiet Case', price: 140 },
-      cooler: { name: 'Low‑profile Air', price: 60 },
-      motherboard: { name: 'Mini‑ITX board', price: 220 }
+      case: { name: 'Mini-ITX Quiet Case', price: 140 },
+      cooler: { name: 'Low-profile Air', price: 60 },
+      motherboard: { name: 'Mini-ITX board', price: 220 }
     }
   ];
 
@@ -214,11 +214,11 @@ async function fetchCandidateBuilds(c: Collected): Promise<Build[]> {
       b.motherboard.price;
 
     return {
-      id: ai-${Date.now()}-${i},
-      name: ${b.name} — ${c.resolution} ${c.useCase},
-      description: AI‑recommended ${c.useCase} build targeting ${c.resolution}${
-        c.frameRate ?  @ ~${c.frameRate}fps : ''
-      }.,
+      id: `ai-${Date.now()}-${i}`,
+      name: `${b.name} — ${c.resolution} ${c.useCase}`,
+      description: `AI-recommended ${c.useCase} build targeting ${c.resolution}${
+        c.frameRate ? ` @ ~${c.frameRate}fps` : ''
+      }.`,
       components,
       total_price: total
     };
@@ -243,7 +243,7 @@ export default function PCAIPage({ onBackToHome }: { onBackToHome: () => void })
   const [loading, setLoading] = useState(false);
   const [collected, setCollected] = useState<Collected>({});
   const [suggestions, setSuggestions] = useState<Build[]>([]);
-  const hasGreeted = useRef(false); // prevent StrictMode double‑mount duplicate greeting
+  const hasGreeted = useRef(false); // prevent StrictMode double-mount duplicate greeting
   const listRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
@@ -256,7 +256,7 @@ export default function PCAIPage({ onBackToHome }: { onBackToHome: () => void })
     ]);
   }, []);
 
-  // Auto‑scroll
+  // Auto-scroll
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, suggestions]);
@@ -270,7 +270,7 @@ export default function PCAIPage({ onBackToHome }: { onBackToHome: () => void })
     const q = questionFor(missing);
     setMessages((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), role: 'assistant', content: ${info}\n\n${q} }
+      { id: crypto.randomUUID(), role: 'assistant', content: `${info}\n\n${q}` }
     ]);
   };
 
@@ -300,7 +300,7 @@ export default function PCAIPage({ onBackToHome }: { onBackToHome: () => void })
       {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: Great — I have everything I need (${summary(updated)}). Let me search for solid options...
+        content: `Great — I have everything I need (${summary(updated)}). Let me search for solid options...`
       }
     ]);
 
@@ -359,7 +359,7 @@ export default function PCAIPage({ onBackToHome }: { onBackToHome: () => void })
     } catch (err: any) {
       setMessages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), role: 'assistant', content: ❌ Couldn't save: ${err.message || 'unknown error'} }
+        { id: crypto.randomUUID(), role: 'assistant', content: `❌ Couldn't save: ${err.message || 'unknown error'}` }
       ]);
     }
   };
@@ -369,7 +369,7 @@ export default function PCAIPage({ onBackToHome }: { onBackToHome: () => void })
       e.preventDefault();
       sendMessage();
     }
-  };
+    };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
@@ -384,9 +384,9 @@ export default function PCAIPage({ onBackToHome }: { onBackToHome: () => void })
         {messages.map((m) => (
           <div
             key={m.id}
-            className={max-w-3xl ${
+            className={`max-w-3xl ${
               m.role === 'assistant' ? 'bg-gray-800/70' : 'bg-red-600/20 border border-red-500/30'
-            } rounded-2xl px-4 py-3}
+            } rounded-2xl px-4 py-3`}
           >
             <p className="whitespace-pre-wrap leading-relaxed">{m.content}</p>
           </div>
