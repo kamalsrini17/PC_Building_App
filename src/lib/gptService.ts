@@ -15,7 +15,7 @@ export async function askGPT(prompt: string): Promise<string> {
         Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-5",
         messages,
         temperature: 0.7,
       }),
