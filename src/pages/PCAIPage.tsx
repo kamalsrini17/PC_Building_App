@@ -332,4 +332,202 @@ export default function PCAIPage({ onBackToHome }: { onBackToHome: () => void })
     pushAssistant(`Great — I have everything I need (${summary(updated)}). Let me search for solid options...`);
     try {
       const candidates = await fetchCandidateBuilds(updated);
-      const available
+      const available = filterByInventory(candidates);
+      setSuggestions(available.length ? available : candidates);
+      setTyping(false);
+      pushAssistant(
+        available.length
+          ? `Found ${available.length} builds matching your specs and our current inventory!`
+          : `Found ${candidates.length} builds for you! (Some parts may need ordering)`
+      );
+    } catch (error) {
+      setTyping(false);
+      pushAssistant('Sorry, I encountered an error while searching for builds. Please try again.');
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!input.trim() || loading) return;
+    
+    const userMsg = input.trim();
+    setInput('');
+    setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'user', content: userMsg }]);
+    setLoading(true);
+    
+    await handleUserTurn(userMsg);
+    setLoading(false);
+  };
+
+  const saveBuild = async (build: Build) => {
+    if (!user) {
+      alert('Please sign in to save builds');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from('builds').insert({
+        user_id: user.id,
+        name: build.name,
+        description: build.description,
+        components: build.components,
+        total_price: build.total_price
+      });
+
+      if (error) throw error;
+      alert('Build saved successfully!');
+    } catch (error) {
+      console.error('Error saving build:', error);
+      alert('Failed to save build');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900/20 to-black text-white">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-sm border-b border-red-500/20">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+          <button
+            onClick={onBackToHome}
+            className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600/30 transition-colors"
+          >
+            ←
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center">
+              <Bot className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">PC AI Assistant</h1>
+              <p className="text-sm text-gray-400">Your personal build advisor</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Chat Container */}
+      <div className="max-w-4xl mx-auto px-4 py-6 flex flex-col h-[calc(100vh-100px)]">
+        {/* Messages */}
+        <div ref={listRef} className="flex-1 overflow-y-auto space-y-4 mb-6">
+          {messages.map((msg) => (
+            <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {msg.role === 'assistant' && (
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-5 h-5 text-white" />
+                </div>
+              )}
+              <div className={`max-w-[70%] ${msg.role === 'user' ? 'order-1' : ''}`}>
+                <div
+                  className={`p-4 rounded-2xl ${
+                    msg.role === 'user'
+                      ? 'bg-red-600 text-white ml-auto'
+                      : 'bg-gray-800/50 backdrop-blur-sm border border-gray-700/50'
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                </div>
+                {msg.quickReplies && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {msg.quickReplies.map((reply, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleQuickReply(reply)}
+                        className="px-3 py-1 text-sm bg-gray-700/50 hover:bg-gray-600/50 rounded-full border border-gray-600/50 transition-colors"
+                      >
+                        {reply}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {msg.role === 'user' && (
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-600 to-gray-700 flex items-center justify-center flex-shrink-0">
+                  <User className="w-5 h-5 text-white" />
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Typing Indicator */}
+          {typing && (
+            <div className="flex gap-3 justify-start">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center flex-shrink-0">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+              <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-4 rounded-2xl">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Build Suggestions */}
+          {suggestions.length > 0 && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-red-400 mb-4">Recommended Builds</h3>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {suggestions.map((build) => (
+                  <div
+                    key={build.id}
+                    className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-red-500/30 transition-colors"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <h4 className="font-semibold text-lg">{build.name}</h4>
+                      <span className="text-2xl font-bold text-red-400">${build.total_price.toLocaleString()}</span>
+                    </div>
+                    <p className="text-gray-400 text-sm mb-4">{build.description}</p>
+                    <div className="space-y-2 text-sm">
+                      {Object.entries(build.components).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="text-gray-400">{key}:</span>
+                          <span>{String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => saveBuild(build)}
+                      className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
+                    >
+                      Save Build
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Input Area */}
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4">
+          <div className="flex gap-3">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
+              placeholder="Tell me about your ideal PC build..."
+              className="flex-1 bg-transparent border-none outline-none resize-none text-white placeholder-gray-400"
+              rows={1}
+              disabled={loading}
+            />
+            <button
+              onClick={sendMessage}
+              disabled={loading || !input.trim()}
+              className="p-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors"
+            >
+              {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
