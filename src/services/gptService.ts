@@ -52,38 +52,7 @@ export class GPTService {
       const edgeFunctionUrl = `${supabaseUrl}/functions/v1/openai-chat`;
 
       const response = await fetch(edgeFunctionUrl, {
-      }
-      )
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      if (!supabaseUrl) {
-        throw new Error('Supabase URL not configured');
-      }
 
-      const edgeFunctionUrl = `${supabaseUrl}/functions/v1/openai-chat`;
-
-      // Prepare messages for the API
-      const messages = [
-        ...conversationHistory.map(msg => ({
-          role: msg.role,
-          content: msg.content,
-        })),
-        { role: 'user', content: message }
-      ];
-
-      const response = await fetch(edgeFunctionUrl, {
-          messages: [
-            ...conversationHistory.map(msg => ({
-              role: msg.role,
-              content: msg.content,
-            })),
-            { role: 'user', content: message }
-          ],
-        body: JSON.stringify({ messages }),
-      });
-
-      if (!response.ok) {
         const errorData = await response.json();
         console.error('Error calling Supabase Edge Function:', errorData);
         throw new Error(errorData.error || 'Failed to get response from AI');
