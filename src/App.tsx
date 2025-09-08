@@ -41,7 +41,7 @@ function App() {
       setCurrentPage('pcai');
     } else {
       setShowAuthModal(true);
-    // Don't automatically navigate, let user choose
+    }
   };
 
   const handleAddToCart = (build: CartItem) => {
@@ -296,7 +296,6 @@ function App() {
       />
     </div>
   );
-}
 }
 
 export default App;
