@@ -28,45 +28,97 @@ const generateAIResponse = async (userMessage: string, messageHistory: Message[]
   
   const lowerMessage = userMessage.toLowerCase();
   
+  // Extract context from conversation history
+  const conversationText = messageHistory.map(m => m.content.toLowerCase()).join(' ');
+  const hasBudget = /\$\d+|\d+\s*dollars?|\d+k|budget.*\d+|under.*\d+|around.*\d+/.test(conversationText);
+  const hasUseCase = /gaming|work|productivity|content creation|streaming|video editing|office|general use/.test(conversationText);
+  const hasResolution = /1080p|1440p|4k|2160p|resolution/.test(conversationText);
+  
   // Gaming responses
   if (lowerMessage.includes('gaming') || lowerMessage.includes('game')) {
-    const responses = [
-      "For gaming, I'd recommend focusing on a strong GPU and CPU combo. What's your budget range? Are you targeting 1080p, 1440p, or 4K gaming?",
-      "Gaming builds are my specialty! What games do you primarily play? AAA titles need more power than esports games like Valorant or CS2.",
-      "Great choice for gaming! I'd suggest an RTX 4070 or better for 1440p gaming. What's your target frame rate - 60fps, 144fps, or higher?",
-      "For a solid gaming experience, you'll want at least 16GB RAM, a modern GPU, and a fast SSD. What's your total budget looking like?"
-    ];
+    if (hasBudget && hasResolution) {
+      const responses = [
+        "Perfect! With your budget and resolution target, I'd recommend focusing on these components: For the GPU, consider an RTX 4070 or RX 7800 XT. For CPU, a Ryzen 7 7700X or Intel i5-13600K would pair well.",
+        "Great specs! Based on what you've told me, here's what I'd prioritize: 1) GPU (40-50% of budget), 2) CPU (20-25%), 3) 32GB DDR5 RAM, 4) Fast NVMe SSD. Want specific recommendations?",
+        "Excellent! For your gaming setup, I'd suggest: RTX 4070 Super for the graphics, Ryzen 7 7700X for processing, 32GB DDR5-6000 RAM, and a 1TB Gen4 NVMe SSD. This should handle everything beautifully!"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    } else if (hasBudget) {
+      const responses = [
+        "Great! With your budget in mind, what resolution are you targeting? 1080p, 1440p, or 4K? This will help me recommend the right GPU tier.",
+        "Perfect budget info! Are you planning to play competitive esports titles or more demanding AAA games? This affects the GPU and CPU balance I'd recommend.",
+        "Nice! For that budget range, what's your monitor situation? High refresh rate 1080p, 1440p gaming, or 4K? This determines our GPU priority."
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    } else {
+      const responses = [
+        "Gaming builds are exciting! What's your budget range? This helps me recommend the right performance tier for your needs.",
+        "Love helping with gaming builds! What's your target budget? Are you looking at $800, $1200, $1500, or higher?",
+        "Gaming setup coming up! To give you the best recommendations, what's your budget range looking like?"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+  }
+  
+  // Budget responses - only if budget not already established
+  if ((lowerMessage.includes('budget') || lowerMessage.includes('$') || lowerMessage.includes('cheap')) && !hasBudget) {
     return responses[Math.floor(Math.random() * responses.length)];
   }
   
-  // Budget responses
-  if (lowerMessage.includes('budget') || lowerMessage.includes('$') || lowerMessage.includes('cheap')) {
+  // If budget is mentioned but already established, provide different responses
+  if ((lowerMessage.includes('budget') || lowerMessage.includes('$')) && hasBudget) {
     const responses = [
-      "Budget builds can still be powerful! What's your target price range? I can help you get the best performance per dollar.",
-      "Smart to think about budget first! For gaming, I'd allocate about 40-50% to the GPU. What's your total budget?",
-      "I love budget optimization! Are you looking at $800, $1200, or $1500 range? Each tier opens up different possibilities.",
-      "Budget-conscious building is an art! What's your max spend, and what will you primarily use this PC for?"
+      "Got it! Based on your budget, let me suggest some specific components. What aspect would you like to focus on first - GPU, CPU, or overall system balance?",
+      "Perfect! With that budget established, I can recommend some great component combinations. Are you more interested in maximizing gaming performance or getting a balanced workstation?",
+      "Excellent budget planning! Now let's talk components. Would you like me to suggest a complete build breakdown or focus on specific parts first?"
     ];
     return responses[Math.floor(Math.random() * responses.length)];
   }
   
   // Specific component questions
   if (lowerMessage.includes('cpu') || lowerMessage.includes('processor')) {
-    const responses = [
-      "For CPUs, AMD Ryzen 7000 series and Intel 13th gen are both excellent. Gaming or productivity focused?",
-      "CPU choice depends on your use case. Ryzen 7 7700X is great for gaming, while Ryzen 9 7900X excels at content creation.",
-      "Intel vs AMD is closer than ever! What's your primary use case and budget for the CPU?",
-      "Modern CPUs are incredibly capable. Are you doing pure gaming, streaming, video editing, or a mix?"
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
+    if (hasUseCase && hasBudget) {
+      const responses = [
+        "Based on your use case and budget, I'd recommend: For gaming - Ryzen 7 7700X or Intel i5-13600K. For productivity - Ryzen 9 7900X or Intel i7-13700K. Both offer excellent performance in their price ranges.",
+        "Perfect! Given what you've told me, here are my top CPU picks: AMD Ryzen 7 7700X for excellent gaming performance, or if you need more cores for productivity, the Ryzen 9 7900X is fantastic.",
+        "Great question! For your setup, I'd suggest the Intel i5-13600K for pure gaming (great price/performance) or the Ryzen 7 7700X for a good gaming/productivity balance."
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    } else {
+      const responses = [
+        "CPUs are crucial! To recommend the best one, what will you primarily use this PC for? Gaming, content creation, or general productivity?",
+        "Great question! Modern CPUs are amazing. Are you leaning toward gaming performance, productivity work, or a balanced approach?",
+        "CPU selection depends on your needs. What's your main use case - gaming, streaming, video editing, or general use?"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
   }
   
   if (lowerMessage.includes('gpu') || lowerMessage.includes('graphics')) {
+    if (hasResolution && hasBudget) {
+      const responses = [
+        "Perfect! Based on your resolution and budget, here are my GPU recommendations: RTX 4070 for excellent 1440p gaming, RTX 4060 Ti for solid 1080p, or RTX 4080 if you're targeting 4K.",
+        "Great info! For your setup, I'd suggest: 1080p gaming - RTX 4060 Ti or RX 7700 XT, 1440p - RTX 4070 or RX 7800 XT, 4K - RTX 4080 or better.",
+        "Excellent! With your resolution target and budget, the RTX 4070 hits the sweet spot for most users. It handles 1440p beautifully and has great ray tracing support."
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    } else {
+      const responses = [
+        "GPU is the heart of gaming! What resolution will you be playing at? 1080p, 1440p, or 4K? This determines which tier to recommend.",
+        "Graphics cards are my favorite topic! What's your target resolution and refresh rate? This helps me suggest the perfect GPU tier.",
+        "Great question! To recommend the right GPU, what resolution are you targeting? Also, do you care about ray tracing?"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    return responses[Math.floor(Math.random() * responses.length)];
+  }
+  
+  // Handle specific budget amounts
+  if (/\$\d+|\d+\s*dollars?|\d+k/.test(lowerMessage)) {
     const responses = [
-      "GPU is crucial for gaming! RTX 4070 hits the sweet spot for 1440p, while RTX 4080 handles 4K well. What resolution are you targeting?",
-      "For graphics cards, consider your monitor resolution first. 1080p? RTX 4060 Ti. 1440p? RTX 4070. 4K? RTX 4080 or better.",
-      "NVIDIA RTX 40-series and AMD RX 7000 series are both solid choices. Ray tracing important to you?",
-      "GPU prices have stabilized nicely! What games do you want to play and at what settings?"
+      "Great budget! That opens up some excellent options. What will you primarily use this PC for? Gaming, work, content creation, or a mix?",
+      "Perfect budget range! Now I can give you targeted recommendations. Are you building for gaming, productivity, or general use?",
+      "Excellent! With that budget, we can build something really nice. What's your main use case - gaming, work, or something specific?"
     ];
     return responses[Math.floor(Math.random() * responses.length)];
   }
@@ -87,16 +139,26 @@ const generateAIResponse = async (userMessage: string, messageHistory: Message[]
     return "I'm here to help you build the perfect PC! Tell me:\n\n• What will you use it for? (gaming, work, content creation)\n• What's your budget range?\n• Any specific requirements or preferences?\n\nI'll guide you through choosing the best components!";
   }
   
+  // Context-aware default responses
+  if (hasBudget && hasUseCase) {
+    const responses = [
+      "Based on what you've told me, I can suggest some specific components! Would you like me to recommend a complete build or focus on particular parts?",
+      "Great! I have enough info to make solid recommendations. Want me to suggest a full system or dive into specific components first?",
+      "Perfect! With your budget and use case, I can recommend some excellent options. Shall we start with the core components like CPU and GPU?"
+    ];
+    return responses[Math.floor(Math.random() * responses.length)];
+  }
+  
   // Default responses for general questions
   const defaultResponses = [
-    "That's a great question! To give you the best advice, could you tell me more about your specific needs and budget?",
-    "Interesting! What's your primary use case for this PC? Gaming, work, content creation, or general use?",
-    "I'd love to help with that! What's your budget range and what will you mainly use the PC for?",
-    "Good point! To recommend the best components, I need to know your budget and intended use case.",
-    "Let me help you with that! Are you building for gaming, productivity, or something specific?",
-    "That's definitely something I can assist with! What's your target budget and main use case?",
-    "Great question! Tell me about your budget and what you'll primarily use this PC for, and I'll give you tailored advice.",
-    "I can definitely help! What's your price range and will this be mainly for gaming, work, or general use?"
+    "That's interesting! Can you tell me more about what you're looking for?",
+    "I'd love to help with that! What specific aspect would you like to know more about?",
+    "Good question! Could you give me a bit more detail about what you're thinking?",
+    "Let me help you with that! What would you like to focus on?",
+    "That's definitely something I can assist with! Tell me more about your needs.",
+    "Great point! What specific information would be most helpful for you?",
+    "I can help with that! What aspect interests you most?",
+    "Absolutely! What would you like to dive deeper into?"
   ];
   
   return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
