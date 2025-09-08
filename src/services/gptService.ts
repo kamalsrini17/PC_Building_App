@@ -52,6 +52,8 @@ export class GPTService {
       const edgeFunctionUrl = `${supabaseUrl}/functions/v1/openai-chat`;
 
       const response = await fetch(edgeFunctionUrl, {
+      }
+      )
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       
