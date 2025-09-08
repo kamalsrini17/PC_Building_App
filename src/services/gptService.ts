@@ -52,12 +52,24 @@ export class GPTService {
       const edgeFunctionUrl = `${supabaseUrl}/functions/v1/openai-chat`;
 
       const response = await fetch(edgeFunctionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          messages: conversationHistory.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+          })).concat([{ role: 'user', content: message }]),
+        }),
+      });
 
+      if (!response.ok) {
         const errorData = await response.json();
         console.error('Error calling Supabase Edge Function:', errorData);
         throw new Error(errorData.error || 'Failed to get response from AI');
       }
-      )
 
       const data = await response.json();
       const assistantContent = data.content;
