@@ -316,7 +316,7 @@ Be helpful, knowledgeable, and ask clarifying questions about budget, use case, 
       body: JSON.stringify({
         model: 'gpt-5',
         messages: openaiMessages,
-        temperature: 0.7,
+        temperature: 1,
         max_completion_tokens: 2000,
       }),
     })
