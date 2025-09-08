@@ -327,7 +327,26 @@ Be helpful, knowledgeable, and ask clarifying questions about budget, use case, 
     }
 
     const data = await openaiResponse.json()
-    const assistantMessage = data.choices[0].message.content
+    
+    // Handle GPT-5 Thinking model response structure
+    let assistantMessage = ''
+    const choice = data.choices[0]
+    
+    if (choice.message) {
+      // Standard response
+      assistantMessage = choice.message.content || ''
+    } else if (choice.delta && choice.delta.content) {
+      // Streaming response (shouldn't happen but handle it)
+      assistantMessage = choice.delta.content
+    }
+    
+    // Log the full response for debugging
+    console.log('OpenAI Response:', JSON.stringify(data, null, 2))
+    console.log('Assistant Message:', assistantMessage)
+    
+    if (!assistantMessage) {
+      throw new Error('No content received from OpenAI API')
+    }
 
     // Extract build suggestion if present
     let buildSuggestion = null
