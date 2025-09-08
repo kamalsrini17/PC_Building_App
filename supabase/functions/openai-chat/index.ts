@@ -314,7 +314,7 @@ Be helpful, knowledgeable, and ask clarifying questions about budget, use case, 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5-thinking',
         messages: openaiMessages,
         temperature: 0.7,
         max_tokens: 2000,
