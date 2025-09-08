@@ -317,7 +317,7 @@ Be helpful, knowledgeable, and ask clarifying questions about budget, use case, 
         model: 'gpt-5',
         messages: openaiMessages,
         temperature: 0.7,
-        max_tokens: 2000,
+        max_completion_tokens: 2000,
       }),
     })
 
