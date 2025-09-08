@@ -314,10 +314,10 @@ Be helpful, knowledgeable, and ask clarifying questions about budget, use case, 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5',
+        model: 'gpt-4o',
         messages: openaiMessages,
         temperature: 1,
-        max_completion_tokens: 2000,
+        max_tokens: 2000,
       }),
     })
 
