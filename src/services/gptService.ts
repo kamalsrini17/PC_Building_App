@@ -57,6 +57,7 @@ export class GPTService {
         console.error('Error calling Supabase Edge Function:', errorData);
         throw new Error(errorData.error || 'Failed to get response from AI');
       }
+      )
 
       const data = await response.json();
       const assistantContent = data.content;
