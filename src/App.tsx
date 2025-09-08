@@ -5,7 +5,9 @@ import BuildPage from './components/BuildPage';
 import AuthModal from './components/AuthModal';
 import MyBuildsPage from './pages/MyBuildsPage';
 import CartPage from './pages/CartPage';
+import PCAIPage from './pages/PCAIPage';
 import { useAuth } from './hooks/useAuth';
+import { supabase } from './lib/supabase';
 
 interface CartItem {
   id: string;
@@ -17,7 +19,7 @@ interface CartItem {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'build' | 'myBuilds' | 'cart'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'build' | 'myBuilds' | 'cart' | 'pcai'>('home');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -34,6 +36,14 @@ function App() {
     setCurrentPage('build');
   };
 
+  const handlePCAIClick = () => {
+    if (isAuthenticated) {
+      setCurrentPage('pcai');
+    } else {
+      setShowAuthModal(true);
+    // Don't automatically navigate, let user choose
+  };
+
   const handleAddToCart = (build: CartItem) => {
     // Check if build is already in cart
     if (cartItems.find(item => item.id === build.id)) {
@@ -43,6 +53,28 @@ function App() {
     
     setCartItems(prev => [...prev, build]);
     alert('Build added to cart!');
+  };
+
+  const handleAddToMyBuilds = async (build: any) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('builds')
+        .insert([{ 
+          name: build.name, 
+          description: build.description || null,
+          user_id: user.id, 
+          components: build.components, 
+          total_price: build.total_price 
+        }]);
+
+      if (error) throw error;
+      alert('Build added to My Builds successfully!');
+    } catch (error: any) {
+      console.error('Error adding build:', error);
+      alert('Failed to add build to My Builds');
+    }
   };
 
   const handleRemoveFromCart = (buildId: string) => {
@@ -68,6 +100,15 @@ function App() {
 
   if (currentPage === 'build') {
     return <BuildPage onBackToHome={() => setCurrentPage('home')} />;
+  }
+
+  if (currentPage === 'pcai') {
+    return (
+      <PCAIPage 
+        onBackToHome={() => setCurrentPage('home')}
+        onAddToMyBuilds={handleAddToMyBuilds}
+      />
+    );
   }
 
   if (currentPage === 'myBuilds') {
@@ -126,7 +167,7 @@ function App() {
 
               {/* PC AI - Right Triangle */}
               <div 
-                onClick={() => alert('PC AI feature coming soon!')}
+                onClick={handlePCAIClick}
                 className="group absolute inset-0 cursor-pointer"
                 style={{
                   clipPath: 'polygon(50% 0, 100% 0, 100% 100%, 50% 100%)'
